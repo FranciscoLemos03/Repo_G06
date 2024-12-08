@@ -1,4 +1,4 @@
-package com.example.share2care
+package com.example.share2care.ui.Components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
