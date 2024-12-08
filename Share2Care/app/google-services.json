@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "584573175217",
+    "project_id": "share2care-bae3d",
+    "storage_bucket": "share2care-bae3d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584573175217:android:9d84d77b91197dc0aca990",
+        "android_client_info": {
+          "package_name": "com.example.share2care"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB94I201E8AEV8TELD2ysM0Y3EwqTPLYDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
