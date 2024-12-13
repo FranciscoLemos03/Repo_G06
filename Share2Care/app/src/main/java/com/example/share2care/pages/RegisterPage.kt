@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
@@ -33,6 +34,8 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
+
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(authState.value){
         when(authState.value){
@@ -89,19 +92,27 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password*") },
+                label = { Text("Palavra-passe*") },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            painter = painterResource(id = if (passwordVisible) R.drawable.visibility else R.drawable.visibilityoff),
+                            contentDescription = if (passwordVisible) "Esconder senha" else "Mostrar senha"
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.background, // Removes border
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary, // Pink line when focused
-                    cursorColor = MaterialTheme.colorScheme.secondary,             // Pink cursor
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,   // White label when unfocused
-                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary      // White label when focused
+                    unfocusedBorderColor = MaterialTheme.colorScheme.background,
+                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    cursorColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    focusedLabelColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
 

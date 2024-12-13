@@ -42,6 +42,19 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    fun loginAnonymous(){
+
+        _authState.value = AuthState.Loading
+        auth.signInAnonymously()
+            .addOnCompleteListener{task->
+                if (task.isSuccessful){
+                    _authState.value = AuthState.Authenticated
+                } else {
+                    _authState.value = AuthState.Error(task.exception?.message?:"Error")
+                }
+            }
+    }
+
     fun register(email : String, password : String){
 
         if(email.isEmpty() || password.isEmpty()){
