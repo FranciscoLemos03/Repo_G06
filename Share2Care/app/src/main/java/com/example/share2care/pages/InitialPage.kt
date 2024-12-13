@@ -98,7 +98,7 @@ fun InitialPage(navController: NavController, authViewModel: AuthViewModel) {
                 text = "Continue as Guest User",
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.clickable(onClick = { navController.navigate("home") })
+                modifier = Modifier.clickable(onClick = { authViewModel.loginAsAnonymous() })
             )
         }
     }
