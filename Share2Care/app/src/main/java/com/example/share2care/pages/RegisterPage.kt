@@ -1,28 +1,29 @@
-package com.example.share2care.PagesUI
+package com.example.share2care.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.share2care.AuthState
+import com.example.share2care.AuthViewModel
 import com.example.share2care.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-<<<<<<< Updated upstream:Share2Care/app/src/main/java/com/example/share2care/PagesUI/Login.kt
-fun LoginPage(onLoginClick: () -> Unit) {
-    var accessCode by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-=======
-fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
+fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember {
         mutableStateOf("")
     }
@@ -44,12 +45,12 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
             else -> Unit
         }
     }
->>>>>>> Stashed changes:Share2Care/app/src/main/java/com/example/share2care/pages/LoginPage.kt
 
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier
@@ -70,9 +71,9 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
 
             // Access Code Field
             OutlinedTextField(
-                value = accessCode,
-                onValueChange = { accessCode = it },
-                label = { Text("Código de acesso*") },
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email*") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier
@@ -88,7 +89,6 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
             )
 
             // Password Field
-
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -116,17 +116,17 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
                 )
             )
 
-
             // Login Button
             Button(
-                onClick = onLoginClick,
+                onClick = { authViewModel.register(email,password) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
                     .height(56.dp)
             ) {
-                Text(text = "LOGIN")
+                Text(text = "Register")
             }
         }
     }
 }
+

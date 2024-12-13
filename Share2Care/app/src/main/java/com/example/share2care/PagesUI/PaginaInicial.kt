@@ -76,7 +76,11 @@ fun MainPage(onNavigateToLogin: () -> Unit, onNavigateToRegister: () -> Unit) {
                 text = "Continuar como visitante",
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
+<<<<<<< Updated upstream:Share2Care/app/src/main/java/com/example/share2care/PagesUI/PaginaInicial.kt
                 modifier = Modifier.clickable(onClick = { onNavigateToLogin() })
+=======
+                modifier = Modifier.clickable(onClick = { authViewModel.loginAnonymous() })
+>>>>>>> Stashed changes:Share2Care/app/src/main/java/com/example/share2care/pages/InitialPage.kt
             )
         }
     }
