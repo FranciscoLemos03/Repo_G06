@@ -121,7 +121,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
             // Login Button
             Button(
-                onClick = { authViewModel.register(email,password,firestoreViewModel) },
+                onClick = { authViewModel.register(email,password,firestoreViewModel,navController) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
