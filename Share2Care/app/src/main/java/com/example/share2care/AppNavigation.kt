@@ -9,6 +9,7 @@ import com.example.share2care.pages.HomePage
 import com.example.share2care.pages.InitialPage
 import com.example.share2care.pages.LoginPage
 import com.example.share2care.pages.RegisterPage
+import com.example.share2care.pages.EditLojaSocial
 
 
 @Composable
@@ -27,6 +28,9 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
         }
         composable("home"){
             HomePage(modifier,navController,authViewModel)
+        }
+        composable("editLojaSocial"){
+            EditLojaSocial(navController,authViewModel)
         }
     })
 }

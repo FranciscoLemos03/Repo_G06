@@ -38,6 +38,14 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
 
         TextButton(
             onClick = {
+                navController.navigate("editLojaSocial")
+            }
+        ){
+            Text("Editar")
+        }
+
+        TextButton(
+            onClick = {
                 authViewModel.signout()
             }
         ){

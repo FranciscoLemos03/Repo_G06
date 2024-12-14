@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
+import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +37,8 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
+
+    val firestoreViewModel = FirestoreViewModel()
 
     LaunchedEffect(authState.value){
         when(authState.value){
@@ -118,7 +121,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
             // Login Button
             Button(
-                onClick = { authViewModel.register(email,password) },
+                onClick = { authViewModel.register(email,password,firestoreViewModel) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
