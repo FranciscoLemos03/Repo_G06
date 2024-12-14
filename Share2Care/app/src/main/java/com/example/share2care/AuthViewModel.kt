@@ -3,6 +3,7 @@ package com.example.share2care
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 
 class AuthViewModel : ViewModel() {
@@ -59,7 +60,7 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    fun register(email: String, password: String, firestoreViewModel: FirestoreViewModel) {
+    fun register(email: String, password: String, firestoreViewModel: FirestoreViewModel, navController: NavController) {
         if (email.isEmpty() || password.isEmpty()) {
             _authState.value = AuthState.Error("Email ou Password Inválida")
             return
@@ -74,6 +75,7 @@ class AuthViewModel : ViewModel() {
                         ?.addOnCompleteListener { emailTask ->
                             if (emailTask.isSuccessful) {
                                 _authState.value = AuthState.Error("Verifique seu e-mail antes de continuar.")
+                                navController.navigate("initial")
                             } else {
                                 _authState.value = AuthState.Error(emailTask.exception?.message ?: "Erro ao enviar e-mail de verificação.")
                             }
