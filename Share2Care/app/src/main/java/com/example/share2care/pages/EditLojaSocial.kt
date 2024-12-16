@@ -1,5 +1,6 @@
 package com.example.share2care.pages
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,10 +12,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
@@ -22,7 +20,10 @@ import com.example.share2care.AuthViewModel
 import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.google.firebase.auth.FirebaseAuth
-import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.draw.clip
+import coil.compose.rememberImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,12 +41,8 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
         mutableStateOf("")
     }
 
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var passwordVisible by remember {
-        mutableStateOf(false)
+    var selectedImageUri by remember {
+        mutableStateOf<String?>(null)
     }
 
     val firestoreViewModel = FirestoreViewModel()
@@ -57,6 +54,12 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
 
     val uid = FirebaseAuth.getInstance().currentUser?.uid
 
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            selectedImageUri = uri?.toString() // Armazena o URI da imagem selecionada
+        }
+    )
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -72,10 +75,10 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
     }
 
     LaunchedEffect(lojaSocialData) {
-        // Preencher as variaveis com os dados do Firestore
         lojaSocialData?.let {
             name = it.nome
             description = it.descricao
+            selectedImageUri = it.imagemUrl // Preenche o URI da imagem existente
         }
     }
 
@@ -92,6 +95,35 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+
+            // Campo de imagem
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Selecionar Imagem")
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                selectedImageUri?.let {
+                    // Mostrar a imagem selecionada
+                    Image(
+                        painter = rememberImagePainter(data = it),
+                        contentDescription = "Imagem selecionada",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.onPrimary)
+                    )
+                }
+            }
 
             OutlinedTextField(
                 value = name,
@@ -175,11 +207,11 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                 Text(text = "Mudar Password")
             }
 
-            // Login Button
+            // Botão de alterar
             Button(
                 onClick = {
                     if (uid != null) {
-                        firestoreViewModel.updateLojaSocialDetails(uid, name, description)
+                        firestoreViewModel.updateLojaSocialDetails(uid, name, description,selectedImageUri.toString())
                         Toast.makeText(context, "Dados atualizados com sucesso!", Toast.LENGTH_SHORT).show()
                         navController.navigate("home")
                     } else {

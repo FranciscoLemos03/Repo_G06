@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,4 +63,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(platform(libs.firebase.bom))
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("androidx.activity:activity-compose:1.7.2")
 }
