@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import java.util.UUID
 
 class FirestoreViewModel : ViewModel() {
 
@@ -54,6 +55,26 @@ class FirestoreViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
+    }
+
+
+    fun uploadImageToFirebase(imageUri: String, onComplete: (String) -> Unit) {
+        val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
+        val uploadTask = storageRef.putFile(Uri.parse(imageUri))
+
+        uploadTask.continueWithTask { task ->
+            if (!task.isSuccessful) {
+                task.exception?.let { throw it }
+            }
+            storageRef.downloadUrl
+        }.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val downloadUri = task.result
+                onComplete(downloadUri.toString())
+            } else {
+                Log.e("FirestoreViewModel", "Erro ao fazer upload da imagem: ${task.exception?.message}")
+            }
+        }
     }
 
 
