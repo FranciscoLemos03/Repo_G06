@@ -64,6 +64,7 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
+            is AuthState.Anonymous -> navController.navigate("homeAnonymous")
             else -> {
                 if (uid != null) {
                     email = FirebaseAuth.getInstance().currentUser?.email ?: ""

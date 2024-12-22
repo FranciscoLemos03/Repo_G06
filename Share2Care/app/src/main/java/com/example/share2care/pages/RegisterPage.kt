@@ -43,6 +43,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
     LaunchedEffect(authState.value){
         when(authState.value){
             is AuthState.Authenticated -> navController.navigate("home")
+            is AuthState.Anonymous -> navController.navigate("homeAnonymous")
             is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message,
                 Toast.LENGTH_SHORT).show()
             else -> Unit
@@ -91,7 +92,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                 )
             )
 
-            //butão password
+            //botão password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -103,7 +104,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             painter = painterResource(id = if (passwordVisible) R.drawable.visibility else R.drawable.visibilityoff),
-                            contentDescription = if (passwordVisible) "Esconder senha" else "Mostrar senha"
+                            contentDescription = if (passwordVisible) "Esconder Palavra passe" else "Mostrar Palavra Passe"
                         )
                     }
                 },
