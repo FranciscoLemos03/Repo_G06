@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -27,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
-import com.example.share2care.ui.Components.DynamicButton
+import com.example.share2care.ui.components.DynamicButton
 import com.example.share2care.R
 
 @Composable
@@ -38,9 +37,10 @@ fun InitialPage(navController: NavController, authViewModel: AuthViewModel) {
 
     LaunchedEffect(authState.value){
         when(authState.value){
-            is AuthState.Authenticated -> navController.navigate("home")
             is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message,
                 Toast.LENGTH_SHORT).show()
+            is AuthState.Authenticated -> navController.navigate("home")
+            is AuthState.Anonymous -> navController.navigate("homeAnonymous")
             else -> Unit
         }
     }
