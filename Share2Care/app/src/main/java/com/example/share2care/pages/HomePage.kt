@@ -1,8 +1,6 @@
 package com.example.share2care.pages
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -65,40 +63,90 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxHeight() // Garante que o menu ocupe a tela inteira
+                    .fillMaxHeight()
                     .fillMaxWidth(0.8f)
-                    .background(Color(0xFF2F2D43)) // Cor de fundo personalizada
-                    .padding(16.dp) // Padding interno, mas sem depender de WindowInsets
+                    .background(Color(0xFF2F2D43))
+                    .padding(WindowInsets.systemBars.asPaddingValues())
             ) {
-                Spacer(modifier = Modifier.height(100.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                HamburgerButton("Gestão de Beneficiários e Agregados", {}, R.drawable.userinterface )
+                    item {
+                        HamburgerButton(
+                            text = "Gestão de Beneficiários e Agregados",
+                            onClick = {},
+                            img = R.drawable.userinterface
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Gestão de Anúncios", {}, R.drawable.compras )
+                    item {
+                        HamburgerButton(
+                            text = "Gestão de Anúncios",
+                            onClick = { navController.navigate("announceManagement") },
+                            img = R.drawable.compras
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Gestão de Check-Ins", {}, R.drawable.cartaovisitas )
+                    item {
+                        HamburgerButton(
+                            text = "Gestão de Check-Ins",
+                            onClick = {},
+                            img = R.drawable.cartaovisitas
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Gestão de Tickets", {}, R.drawable.ticket)
+                    item {
+                        HamburgerButton(
+                            text = "Gestão de Tickets",
+                            onClick = {},
+                            img = R.drawable.ticket
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Gerir Reports", {}, R.drawable.estatisticas )
+                    item {
+                        HamburgerButton(
+                            text = "Gerir Reports",
+                            onClick = {},
+                            img = R.drawable.estatisticas
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Definições da Loja Social", { navController.navigate("editLojaSocial") }, R.drawable.gear )
+                    item {
+                        HamburgerButton(
+                            text = "Definições da Loja Social",
+                            onClick = { navController.navigate("editLojaSocial") },
+                            img = R.drawable.gear
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(40.dp))
+                    item { Spacer(modifier = Modifier.height(28.dp)) }
 
-                HamburgerButton("Sair", { authViewModel.signout() }, R.drawable.sair )
+                    item {
+                        HamburgerButton(
+                            text = "Sair",
+                            onClick = { authViewModel.signout() },
+                            img = R.drawable.sair
+                        )
+                    }
+                }
             }
         },
     ) {
