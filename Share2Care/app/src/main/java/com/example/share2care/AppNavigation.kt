@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.share2care.pages.AnnounceManagementPage
+import com.example.share2care.pages.CreateAnnouncePage
 import com.example.share2care.pages.HomePage
 import com.example.share2care.pages.InitialPage
 import com.example.share2care.pages.LoginPage
@@ -35,6 +37,12 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
         }
         composable("homeAnonymous"){
             HomePageAnonymous(navController,authViewModel)
+        }
+        composable("announceManagement") {
+            AnnounceManagementPage(navController,authViewModel)
+        }
+        composable("announceCreation") {
+            CreateAnnouncePage(navController,authViewModel)
         }
     })
 }

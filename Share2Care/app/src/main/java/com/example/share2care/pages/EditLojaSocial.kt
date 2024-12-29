@@ -208,7 +208,7 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                 Button(
                     onClick = {
                         if (uid != null) {
-                            firestoreViewModel.uploadImageToFirebase(selectedImageUri.toString()) { imageUrl ->
+                            firestoreViewModel.uploadLojaSocialImageToFirebase(selectedImageUri.toString()) { imageUrl ->
                                 firestoreViewModel.updateLojaSocialDetails(uid, name, description, imageUrl)
                                 Toast.makeText(context, "Dados atualizados com sucesso!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("home")

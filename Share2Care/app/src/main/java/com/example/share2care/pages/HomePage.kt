@@ -1,9 +1,13 @@
 package com.example.share2care.pages
 
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
+import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.Announce
 import com.example.share2care.ui.components.AnnounceHighlight
@@ -42,6 +47,8 @@ import kotlinx.coroutines.launch
 fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
+    val firestoreViewModel = FirestoreViewModel()
+    val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
 
     var procurar by remember { mutableStateOf("") }
     var selectedButton by remember { mutableStateOf("Todos") }
@@ -56,97 +63,49 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
             is AuthState.Anonymous -> navController.navigate("homeAnonymous")
-            else -> Unit
+            else -> {
+                firestoreViewModel.getAllAnunciosWithLojaDetails()
+            }
         }
     }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Box(
+            Column(
                 modifier = Modifier
-                    .fillMaxHeight()
+                    .fillMaxHeight() // Garante que o menu ocupe a tela inteira
                     .fillMaxWidth(0.8f)
-                    .background(Color(0xFF2F2D43))
-                    .padding(WindowInsets.systemBars.asPaddingValues())
+                    .background(Color(0xFF2F2D43)) // Cor de fundo personalizada
+                    .padding(16.dp) // Padding interno, mas sem depender de WindowInsets
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                Spacer(modifier = Modifier.height(100.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Gestão de Beneficiários e Agregados",
-                            onClick = {},
-                            img = R.drawable.userinterface
-                        )
-                    }
+                HamburgerButton("Gestão de Beneficiários e Agregados", {}, R.drawable.userinterface )
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Gestão de Anúncios",
-                            onClick = { navController.navigate("announceManagement") },
-                            img = R.drawable.compras
-                        )
-                    }
+                HamburgerButton("Gestão de Anúncios", {navController.navigate("announceManagement")}, R.drawable.compras )
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Gestão de Check-Ins",
-                            onClick = {},
-                            img = R.drawable.cartaovisitas
-                        )
-                    }
+                HamburgerButton("Gestão de Check-Ins", {}, R.drawable.cartaovisitas )
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Gestão de Tickets",
-                            onClick = {},
-                            img = R.drawable.ticket
-                        )
-                    }
+                HamburgerButton("Gestão de Tickets", {}, R.drawable.ticket)
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Gerir Reports",
-                            onClick = {},
-                            img = R.drawable.estatisticas
-                        )
-                    }
+                HamburgerButton("Gerir Reports", {}, R.drawable.estatisticas )
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Definições da Loja Social",
-                            onClick = { navController.navigate("editLojaSocial") },
-                            img = R.drawable.gear
-                        )
-                    }
+                HamburgerButton("Definições da Loja Social", { navController.navigate("editLojaSocial") }, R.drawable.gear )
 
-                    item { Spacer(modifier = Modifier.height(28.dp)) }
+                Spacer(modifier = Modifier.height(40.dp))
 
-                    item {
-                        HamburgerButton(
-                            text = "Sair",
-                            onClick = { authViewModel.signout() },
-                            img = R.drawable.sair
-                        )
-                    }
-                }
+                HamburgerButton("Sair", { authViewModel.signout() }, R.drawable.sair )
             }
         },
     ) {
@@ -252,8 +211,15 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(25.dp))
 
                 LazyColumn {
-                    items(5) {
-                        Announce()
+                    items(allAnuncios) { anuncio ->
+                        Announce(
+                            tipo = anuncio.tipo,
+                            titulo = anuncio.titulo,
+                            imageUrl = anuncio.imagemUrl,
+                            creationDate = anuncio.dataCriacao,
+                            lojaSocialName = anuncio.lojaSocialName,
+                            imageUrlLojaSocial = anuncio.imageUrlLojaSocial
+                        )
                     }
                 }
             }

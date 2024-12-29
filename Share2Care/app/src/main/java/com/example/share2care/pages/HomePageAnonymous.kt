@@ -153,7 +153,7 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
 
             LazyColumn {
                 items(5) {
-                    Announce()
+                    /*Announce()*/
                 }
             }
         }
