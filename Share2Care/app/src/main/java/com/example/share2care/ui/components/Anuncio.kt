@@ -24,13 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.share2care.R
+import coil.compose.rememberAsyncImagePainter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun Announce(){
+fun Announce(tipo: String, titulo: String, imageUrl: String?, creationDate: Date, lojaSocialName: String, imageUrlLojaSocial: String?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -45,8 +47,8 @@ fun Announce(){
                 .height(IntrinsicSize.Min)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.imgexemplo),
-                contentDescription = "Notícia",
+                rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Imagem do Anúncio",
                 modifier = Modifier
                     .fillMaxHeight()
                     .height(100.dp)
@@ -66,7 +68,7 @@ fun Announce(){
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Notícias",
+                    text = tipo,
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF9E9E9E)
                 )
@@ -74,7 +76,7 @@ fun Announce(){
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Visita do Presidente da Câmara, Drº Ricardo Rio",
+                    text = titulo,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     maxLines = 2,
@@ -85,7 +87,7 @@ fun Announce(){
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
-                        painter = painterResource(id = R.drawable.logoexemplo),
+                        rememberAsyncImagePainter(imageUrlLojaSocial),
                         contentDescription = "Logo",
                         modifier = Modifier
                             .size(24.dp)
@@ -96,7 +98,7 @@ fun Announce(){
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "Loja Social São Lázaro",
+                        text = lojaSocialName,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF9E9E9E)
                     )
@@ -104,7 +106,7 @@ fun Announce(){
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = "7 Novembro 2024",
+                        text = SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(creationDate),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF9E9E9E)
                     )
@@ -113,4 +115,8 @@ fun Announce(){
         }
     }
 }
+
+
+
+
 

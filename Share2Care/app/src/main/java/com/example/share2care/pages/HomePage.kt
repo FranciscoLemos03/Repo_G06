@@ -1,11 +1,13 @@
 package com.example.share2care.pages
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
+import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.Announce
 import com.example.share2care.ui.components.AnnounceHighlight
@@ -44,6 +47,8 @@ import kotlinx.coroutines.launch
 fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
+    val firestoreViewModel = FirestoreViewModel()
+    val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
 
     var procurar by remember { mutableStateOf("") }
     var selectedButton by remember { mutableStateOf("Todos") }
@@ -58,7 +63,9 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
             is AuthState.Anonymous -> navController.navigate("homeAnonymous")
-            else -> Unit
+            else -> {
+                firestoreViewModel.getAllAnunciosWithLojaDetails()
+            }
         }
     }
 
@@ -78,7 +85,7 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                HamburgerButton("Gestão de Anúncios", {}, R.drawable.compras )
+                HamburgerButton("Gestão de Anúncios", {navController.navigate("announceManagement")}, R.drawable.compras )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
@@ -204,8 +211,15 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(25.dp))
 
                 LazyColumn {
-                    items(5) {
-                        Announce()
+                    items(allAnuncios) { anuncio ->
+                        Announce(
+                            tipo = anuncio.tipo,
+                            titulo = anuncio.titulo,
+                            imageUrl = anuncio.imagemUrl,
+                            creationDate = anuncio.dataCriacao,
+                            lojaSocialName = anuncio.lojaSocialName,
+                            imageUrlLojaSocial = anuncio.imageUrlLojaSocial
+                        )
                     }
                 }
             }
