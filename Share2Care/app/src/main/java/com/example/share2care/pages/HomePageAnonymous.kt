@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
+import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.Announce
 import com.example.share2care.ui.components.AnnounceHighlight
@@ -41,14 +43,25 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
 
     var procurar by remember { mutableStateOf("") }
     var selectedButton by remember { mutableStateOf("Todos") }
-    val filters = listOf("Todos", "Voluntariado", "Doação Monetária", "Doação de bens", "Notícias")
+    val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
+    val firestoreViewModel = FirestoreViewModel()
+    val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
+    val filteredAnuncios = allAnuncios.filter { anuncio ->
+        (selectedButton == "Todos" || anuncio.tipo == selectedButton) &&
+                (procurar.isEmpty() ||
+                        anuncio.titulo.contains(procurar, ignoreCase = true) ||
+                        anuncio.lojaSocialName.contains(procurar, ignoreCase = true) ||
+                        anuncio.tipo.contains(procurar, ignoreCase = true))
+    }
 
     // If user unauthenticated, redirect to login page
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
             is AuthState.Authenticated -> navController.navigate("home")
-            else -> Unit
+            else -> {
+                firestoreViewModel.getAllAnunciosWithLojaDetails()
+            }
         }
     }
 
@@ -152,8 +165,15 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
             Spacer(modifier = Modifier.height(25.dp))
 
             LazyColumn {
-                items(5) {
-                    /*Announce()*/
+                items(filteredAnuncios) { anuncio ->
+                    Announce(
+                        tipo = anuncio.tipo,
+                        titulo = anuncio.titulo,
+                        imageUrl = anuncio.imagemUrl,
+                        creationDate = anuncio.dataCriacao,
+                        lojaSocialName = anuncio.lojaSocialName,
+                        imageUrlLojaSocial = anuncio.imageUrlLojaSocial
+                    )
                 }
             }
         }
