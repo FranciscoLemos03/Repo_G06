@@ -52,7 +52,15 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
     var procurar by remember { mutableStateOf("") }
     var selectedButton by remember { mutableStateOf("Todos") }
-    val filters = listOf("Todos", "Voluntariado", "Doação Monetária", "Doação de bens", "Notícias")
+    val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
+
+    val filteredAnuncios = allAnuncios.filter { anuncio ->
+        (selectedButton == "Todos" || anuncio.tipo == selectedButton) &&
+                (procurar.isEmpty() ||
+                        anuncio.titulo.contains(procurar, ignoreCase = true) ||
+                        anuncio.lojaSocialName.contains(procurar, ignoreCase = true) ||
+                        anuncio.tipo.contains(procurar, ignoreCase = true))
+    }
 
     // Estado do menu lateral
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -211,7 +219,7 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                 Spacer(modifier = Modifier.height(25.dp))
 
                 LazyColumn {
-                    items(allAnuncios) { anuncio ->
+                    items(filteredAnuncios) { anuncio ->
                         Announce(
                             tipo = anuncio.tipo,
                             titulo = anuncio.titulo,

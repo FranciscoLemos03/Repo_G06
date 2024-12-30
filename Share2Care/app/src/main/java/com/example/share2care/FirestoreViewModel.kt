@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -236,7 +237,7 @@ class FirestoreViewModel : ViewModel() {
             .addOnSuccessListener { anunciosSnapshot ->
                 val anuncios = mutableListOf<AllAnuncios>()
 
-                // Obtém os IDs únicos das lojas sociais
+                // Obtém os IDs únicos das lojas sociais a partir dos anúncios
                 val lojaIds = anunciosSnapshot.documents.mapNotNull { it.getString("loja_social_id") }.distinct()
 
                 if (lojaIds.isEmpty()) {
@@ -246,27 +247,28 @@ class FirestoreViewModel : ViewModel() {
                 }
 
                 // Consulta os detalhes das lojas sociais
-                firestore.collection("lojasSocial")
-                    .whereIn("uid", lojaIds)
+                firestore.collection("lojaSocial") // Corrigido para o nome correto da coleção
+                    .whereIn(FieldPath.documentId(), lojaIds) // Corrigido para usar o ID do documento
                     .get()
                     .addOnSuccessListener { lojasSnapshot ->
+                        // Mapeia os documentos de lojas sociais por ID
                         val lojasMap = lojasSnapshot.documents.associateBy(
                             { it.id },
-                            { Pair(it.getString("nome") ?: "", it.getString("imagemUrl")) }
+                            { Pair(it.getString("nome") ?: "Loja desconhecida", it.getString("imagemUrl")) }
                         )
 
+                        // Monta os anúncios com os detalhes das lojas
                         for (anuncioDoc in anunciosSnapshot.documents) {
                             val lojaSocialId = anuncioDoc.getString("loja_social_id")
                             val lojaDetails = lojasMap[lojaSocialId]
 
-                            // Verifica se os detalhes da loja social estão disponíveis
                             val anuncio = AllAnuncios(
                                 tipo = anuncioDoc.getString("tipo") ?: "",
                                 titulo = anuncioDoc.getString("titulo") ?: "",
                                 imagemUrl = anuncioDoc.getString("imagemUrl"),
                                 dataCriacao = anuncioDoc.getDate("creation_date") ?: Date(),
-                                lojaSocialName = lojaDetails?.first ?: "Loja desconhecida", // Se não encontrar a loja
-                                imageUrlLojaSocial = lojaDetails?.second
+                                lojaSocialName = lojaDetails?.first ?: "Loja desconhecida", // Nome da loja ou "desconhecida"
+                                imageUrlLojaSocial = lojaDetails?.second // Imagem da loja ou null
                             )
                             anuncios.add(anuncio)
                         }
