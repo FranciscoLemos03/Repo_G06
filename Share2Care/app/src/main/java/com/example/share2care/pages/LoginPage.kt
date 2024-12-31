@@ -70,7 +70,7 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
                     .padding(bottom = 32.dp)
             )
 
-            // Access Code Field
+            //Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -89,7 +89,7 @@ fun LoginPage(navController: NavController, authViewModel: AuthViewModel) {
                 )
             )
 
-            //butão password
+            //Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },

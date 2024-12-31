@@ -1,6 +1,5 @@
 package com.example.share2care.pages
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,7 +32,6 @@ import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.Announce
 import com.example.share2care.ui.components.AnnounceHighlight
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +44,11 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
     val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
     val firestoreViewModel = FirestoreViewModel()
     val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
-    val filteredAnuncios = allAnuncios.filter { anuncio ->
+    val destaqueAnuncios = allAnuncios.take(3)
+
+    val anunciosSemOsPrimeirosTres = allAnuncios.drop(3)
+
+    val filteredAnuncios = anunciosSemOsPrimeirosTres.filter { anuncio ->
         (selectedButton == "Todos" || anuncio.tipo == selectedButton) &&
                 (procurar.isEmpty() ||
                         anuncio.titulo.contains(procurar, ignoreCase = true) ||
@@ -54,7 +56,6 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
                         anuncio.tipo.contains(procurar, ignoreCase = true))
     }
 
-    // If user unauthenticated, redirect to login page
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
@@ -83,7 +84,6 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Botão "Sair" no canto esquerdo
                 Button(
                     onClick = {
                         authViewModel.signout()
@@ -110,8 +110,16 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
                     .height(200.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(5) {
-                    AnnounceHighlight()
+                items(destaqueAnuncios) { anuncio ->
+                    AnnounceHighlight(
+                        imageUrl = anuncio.imagemUrl ?: "",
+                        tipo = anuncio.tipo,
+                        lojaSocialName = anuncio.lojaSocialName,
+                        creationDate = anuncio.dataCriacao,
+                        onClick = {
+                            navController.navigate("announceDetails/${anuncio.id}")
+                        }
+                    )
                 }
             }
 
@@ -172,8 +180,12 @@ fun HomePageAnonymous(navController: NavController, authViewModel: AuthViewModel
                         imageUrl = anuncio.imagemUrl,
                         creationDate = anuncio.dataCriacao,
                         lojaSocialName = anuncio.lojaSocialName,
-                        imageUrlLojaSocial = anuncio.imageUrlLojaSocial
+                        imageUrlLojaSocial = anuncio.imageUrlLojaSocial,
+                        onClick = {
+                            navController.navigate("announceDetails/${anuncio.id}")
+                        }
                     )
+
                 }
             }
         }

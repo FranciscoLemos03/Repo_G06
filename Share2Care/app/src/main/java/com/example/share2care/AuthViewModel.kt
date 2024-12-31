@@ -84,7 +84,7 @@ class AuthViewModel : ViewModel() {
                             }
                         }
 
-                    // Opcional: Salvar os dados no Firestore apenas após a verificação do e-mail
+                    // Salvar os dados no Firestore apenas após a verificação do e-mail
                     val uid = user?.uid
                     if (uid != null) {
                         firestoreViewModel.saveLojaSocialToFirestore(uid)

@@ -63,8 +63,8 @@ fun InitialPage(navController: NavController, authViewModel: AuthViewModel) {
                 painter = painterResource(id = R.drawable.logotemp),
                 contentDescription = "Share2Care Logo",
                 modifier = Modifier
-                    .fillMaxWidth() // Make the logo as wide as the buttons
-                    .height(80.dp) // Adjust height to fit the design
+                    .fillMaxWidth()
+                    .height(80.dp)
                     .padding(bottom = 32.dp)
             )
 
@@ -75,9 +75,9 @@ fun InitialPage(navController: NavController, authViewModel: AuthViewModel) {
                     navController.navigate("login")
                 },
                 modifier = Modifier
-                    .fillMaxWidth() // Full width
-                    .padding(vertical = 8.dp) // Add some vertical spacing
-                    .height(56.dp) // Uniform height
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(56.dp)
             )
 
             // Register Button
@@ -87,9 +87,9 @@ fun InitialPage(navController: NavController, authViewModel: AuthViewModel) {
                     navController.navigate("register")
                 },
                 modifier = Modifier
-                    .fillMaxWidth() // Full width
-                    .padding(vertical = 8.dp) // Add some vertical spacing
-                    .height(56.dp) // Uniform height
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(56.dp)
             )
 
             // Visitor Link
