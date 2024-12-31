@@ -3,6 +3,7 @@ package com.example.share2care.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,39 +18,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.share2care.R
+import coil.compose.rememberAsyncImagePainter
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun AnnounceHighlight(){
+fun AnnounceHighlight(imageUrl: String, tipo: String, lojaSocialName: String, creationDate: Date, onClick: () -> Unit){
+
+    var tipoColor = when (tipo) {
+        "Noticia" -> Color(0xFF5E5790)
+        "Doação monetária" -> Color(0xFF28A745)
+        "Voluntariado" -> Color(0xFFB65500)
+        "Doação de bens" -> Color(0xFF5CA8FF)
+        else -> Color(0xFF5E5790)
+    }
+
     Box(
         modifier = Modifier
-            .size(350.dp, 200.dp) // Dimensões fixas
-            .padding(end = 16.dp) // Padding externo
+            .size(350.dp, 200.dp)
+            .padding(end = 16.dp)
             .border(
-                width = 2.dp, // Contorno branco
+                width = 2.dp,
                 color = Color.White,
-                shape = RoundedCornerShape(16.dp) // Cantos arredondados
+                shape = RoundedCornerShape(16.dp)
             )
-            .clip(RoundedCornerShape(16.dp)) // Para aplicar o contorno também à imagem
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
     ) {
         // Imagem de fundo
         Image(
-            painter = painterResource(id = R.drawable.imgexemplo),
+            rememberAsyncImagePainter(imageUrl),
             contentDescription = null,
-            contentScale = ContentScale.Crop, // Ajusta a imagem para preencher o tamanho do Box
-            modifier = Modifier.fillMaxSize() // Garante que a imagem ocupe todo o espaço do Box
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
-        // Conteúdo sobre a imagem
+        //conteudo em cima da imagem
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp), // Padding interno para o conteúdo
-            verticalArrangement = Arrangement.SpaceBetween // Organiza os itens no topo e no rodapé
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
 
             Box(
@@ -61,29 +74,29 @@ fun AnnounceHighlight(){
                         shape = RoundedCornerShape(8.dp)
                     )
                     .background(
-                        color = Color(0xFF595790),
+                        color = tipoColor,
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .padding(horizontal = 8.dp, vertical = 4.dp) // Padding do conteúdo interno
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "Voluntariado",
+                    text = tipo,
                     color = Color.White,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // Texto no rodapé
+            // Texto
             Column {
                 Text(
-                    text = "Loja Social São Lázaro",
+                    text = lojaSocialName,
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Há 10 minutos",
+                    text = SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(creationDate),
                     color = Color.White,
                     fontSize = 12.sp
                 )

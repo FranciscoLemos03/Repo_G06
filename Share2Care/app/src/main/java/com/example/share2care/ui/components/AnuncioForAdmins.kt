@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,8 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,15 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.share2care.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun Announce(tipo: String, titulo: String, imageUrl: String?, creationDate: Date, lojaSocialName: String, imageUrlLojaSocial: String?, onClick: () -> Unit) {
+fun AnnounceForAdmin(tipo: String, titulo: String, imageUrl: String?, creationDate: Date, lojaSocialName: String, imageUrlLojaSocial: String?, onClick: () -> Unit, Edit: () -> Unit, Delete: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -69,11 +76,52 @@ fun Announce(tipo: String, titulo: String, imageUrl: String?, creationDate: Date
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = tipo,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFF9E9E9E)
-                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = tipo,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF9E9E9E),
+                        lineHeight = 20.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Row {
+                        Button(
+                            onClick = { Edit() },
+                            modifier = Modifier,
+                            shape = RoundedCornerShape(35.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C1B29)),
+                            contentPadding = PaddingValues(0.dp) // Remove padding extra ao redor do conteúdo
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.escrever),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp) // Ajusta o tamanho do ícone
+                            )
+                        }
+
+                        Button(
+                            onClick = { Delete() },
+                            modifier = Modifier,
+                            shape = RoundedCornerShape(35.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C1B29)),
+                            contentPadding = PaddingValues(0.dp) // Remove padding extra ao redor do conteúdo
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.trash),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp) // Ajusta o tamanho do ícone
+                            )
+                        }
+                    }
+
+
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 

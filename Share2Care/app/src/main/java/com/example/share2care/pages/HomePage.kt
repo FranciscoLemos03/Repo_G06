@@ -1,9 +1,6 @@
 package com.example.share2care.pages
 
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,7 +10,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
@@ -26,9 +22,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +33,7 @@ import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.Announce
 import com.example.share2care.ui.components.AnnounceHighlight
+import com.example.share2care.ui.components.CircleButton
 import com.example.share2care.ui.components.HamburgerButton
 import kotlinx.coroutines.launch
 
@@ -49,24 +44,26 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
     val authState = authViewModel.authState.observeAsState()
     val firestoreViewModel = FirestoreViewModel()
     val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
+    val destaqueAnuncios = allAnuncios.take(3)
 
     var procurar by remember { mutableStateOf("") }
     var selectedButton by remember { mutableStateOf("Todos") }
     val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
 
-    val filteredAnuncios = allAnuncios.filter { anuncio ->
+    val anunciosSemOsPrimeirosTres = allAnuncios.drop(3)
+
+    val filteredAnuncios = anunciosSemOsPrimeirosTres.filter { anuncio ->
         (selectedButton == "Todos" || anuncio.tipo == selectedButton) &&
                 (procurar.isEmpty() ||
                         anuncio.titulo.contains(procurar, ignoreCase = true) ||
                         anuncio.lojaSocialName.contains(procurar, ignoreCase = true) ||
                         anuncio.tipo.contains(procurar, ignoreCase = true))
     }
-
     // Estado do menu lateral
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // If user unauthenticated, redirect to login page
+    //Redirecionar user dependendo do estado de autenticação
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
@@ -82,10 +79,10 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
         drawerContent = {
             Column(
                 modifier = Modifier
-                    .fillMaxHeight() // Garante que o menu ocupe a tela inteira
+                    .fillMaxHeight()
                     .fillMaxWidth(0.8f)
-                    .background(Color(0xFF2F2D43)) // Cor de fundo personalizada
-                    .padding(16.dp) // Padding interno, mas sem depender de WindowInsets
+                    .background(Color(0xFF2F2D43))
+                    .padding(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(100.dp))
 
@@ -117,7 +114,6 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
             }
         },
     ) {
-        // Conteúdo principal
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -136,24 +132,14 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(
+                    CircleButton (
                         onClick = {
-                            // Abre o menu lateral
                             scope.launch {
                                 drawerState.open()
                             }
                         },
-                        modifier = Modifier.size(65.dp),
-                        shape = RoundedCornerShape(35.dp)
-                    ) {
-
-                        Icon(
-                            painter = painterResource(R.drawable.hamburger),
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(50.dp)
-                        )
-                    }
+                        R.drawable.hamburger
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(50.dp))
@@ -164,8 +150,16 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                         .height(200.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
-                    items(5) {
-                        AnnounceHighlight()
+                    items(destaqueAnuncios) { anuncio ->
+                        AnnounceHighlight(
+                            imageUrl = anuncio.imagemUrl ?: "",
+                            tipo = anuncio.tipo,
+                            lojaSocialName = anuncio.lojaSocialName,
+                            creationDate = anuncio.dataCriacao,
+                            onClick = {
+                                navController.navigate("announceDetails/${anuncio.id}")
+                            }
+                        )
                     }
                 }
 
@@ -220,14 +214,19 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
                 LazyColumn {
                     items(filteredAnuncios) { anuncio ->
+
                         Announce(
                             tipo = anuncio.tipo,
                             titulo = anuncio.titulo,
                             imageUrl = anuncio.imagemUrl,
                             creationDate = anuncio.dataCriacao,
                             lojaSocialName = anuncio.lojaSocialName,
-                            imageUrlLojaSocial = anuncio.imageUrlLojaSocial
+                            imageUrlLojaSocial = anuncio.imageUrlLojaSocial,
+                            onClick = {
+                                navController.navigate("announceDetails/${anuncio.id}")
+                            }
                         )
+
                     }
                 }
             }

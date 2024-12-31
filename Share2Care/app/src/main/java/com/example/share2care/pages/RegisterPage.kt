@@ -69,11 +69,10 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                 contentDescription = "Share2Care Logo",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp) // Adjust height
+                    .height(80.dp)
                     .padding(bottom = 32.dp)
             )
 
-            // Access Code Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -92,7 +91,7 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                 )
             )
 
-            //botão password
+            //Password Button
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },

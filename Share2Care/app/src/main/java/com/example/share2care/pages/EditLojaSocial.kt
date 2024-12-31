@@ -1,6 +1,5 @@
 package com.example.share2care.pages
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +17,6 @@ import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
 import com.example.share2care.FirestoreViewModel
-
 import com.google.firebase.auth.FirebaseAuth
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,7 +42,7 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            selectedImageUri = uri?.toString() // Store the URI of the selected image
+            selectedImageUri = uri?.toString()
         }
     )
 
@@ -65,7 +63,7 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
             name = it.nome
             description = it.descricao
             selectedImageUri = it.imagemUrl ?: "https://via.placeholder.com/150"
-            isLoading = false // Data has been loaded
+            isLoading = false
         }
     }
 
@@ -76,7 +74,6 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
         color = MaterialTheme.colorScheme.background
     ) {
         if (isLoading) {
-            // Display a loading indicator while data is being fetched
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
