@@ -59,11 +59,10 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                         anuncio.lojaSocialName.contains(procurar, ignoreCase = true) ||
                         anuncio.tipo.contains(procurar, ignoreCase = true))
     }
-    // Estado do menu lateral
+
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    //Redirecionar user dependendo do estado de autenticação
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
@@ -98,7 +97,7 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                HamburgerButton("Gestão de Tickets", {}, R.drawable.ticket)
+                HamburgerButton("Gestão de Tickets", {navController.navigate("ticketsPage")}, R.drawable.ticket)
 
                 Spacer(modifier = Modifier.height(40.dp))
 

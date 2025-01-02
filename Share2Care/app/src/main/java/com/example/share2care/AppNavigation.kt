@@ -17,6 +17,7 @@ import com.example.share2care.pages.LoginPage
 import com.example.share2care.pages.RegisterPage
 import com.example.share2care.pages.EditLojaSocial
 import com.example.share2care.pages.HomePageAnonymous
+import com.example.share2care.pages.TicketsPage
 import com.example.share2care.ui.components.EditAnuncioPage
 
 
@@ -73,6 +74,9 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
             announceId?.let {
                 CreateTicketPage(navController = navController, authViewModel = authViewModel, announceId = announceId)
             }
+        }
+        composable("ticketsPage") {
+            TicketsPage(navController,authViewModel)
         }
     })
 }
