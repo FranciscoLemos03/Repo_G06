@@ -47,6 +47,22 @@ class FirestoreViewModel : ViewModel() {
         val lojaSocialName: String = "",
         val imageUrlLojaSocial: String? = null
     )
+    data class Tickets(
+        val id: String = "",
+        val anuncio_id: String = "",
+        val anuncio_titulo: String = "",
+        val motivo: String = "",
+        val email: String? = null,
+        val creation_date: Date = Date(),
+        val nome: String = "",
+        val tipo: String = "",
+        val condicao: String = "",
+        val descricao: String = "",
+        val imagemUrl: String = "",
+        val listaBens: String = "",
+        val quantidade: String = "",
+        val status: String = ""
+    )
 
     private val _lojaSocialData = MutableLiveData<LojaSocialData>()
     val lojaSocialData: LiveData<LojaSocialData> = _lojaSocialData
@@ -56,6 +72,9 @@ class FirestoreViewModel : ViewModel() {
 
     private val _allAnuncios = MutableLiveData<List<AllAnuncios>>()
     val allAnuncios: LiveData<List<AllAnuncios>> get() = _allAnuncios
+
+    private val _ticketData = MutableLiveData<List<Tickets>>()
+    val ticketData: LiveData<List<Tickets>> = _ticketData
 
     private val _firestoreState = MutableLiveData<FirestoreState>()
     val firestoreState: LiveData<FirestoreState> = _firestoreState
@@ -182,7 +201,7 @@ class FirestoreViewModel : ViewModel() {
 
     fun saveTicket(
         nome: String, email: String, motivo: String, listabens: String, quantidade: String,
-        condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String ,dataCriacao: FieldValue, imagemUrl: String?
+        condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String ,dataCriacao: FieldValue, imagemUrl: String?, tituloAnuncio: String?
     ) {
         generateUniqueIdTickets{ uniqueId ->
 
@@ -194,6 +213,8 @@ class FirestoreViewModel : ViewModel() {
                     "tipo" to "Voluntario",
                     "anuncio_id" to anuncioId,
                     "creation_date" to dataCriacao,
+                    "anuncio_titulo" to tituloAnuncio,
+                    "status" to "Pendente"
                 )
                 "Doação de bens" -> mapOf(
                     "listabens" to listabens,
@@ -203,7 +224,9 @@ class FirestoreViewModel : ViewModel() {
                     "tipo" to "Bens",
                     "anuncio_id" to anuncioId,
                     "creation_date" to dataCriacao,
-                    "imagemUrl" to imagemUrl
+                    "imagemUrl" to imagemUrl,
+                    "anuncio_titulo" to tituloAnuncio,
+                    "status" to "Pendente"
                 )
                 else -> emptyMap()
             }
@@ -496,6 +519,49 @@ class FirestoreViewModel : ViewModel() {
             }
     }
 
+    fun getTicketDetails() {
+        firestore.collection("tickets").get()
+            .addOnSuccessListener { documents ->
+                val tickets = documents.mapNotNull { document ->
+                    val id = document.id
+                    val anuncio_id = document.getString("anuncio_id") ?: ""
+                    val anuncio_titulo = document.getString("anuncio_titulo") ?: ""
+                    val motivo = document.getString("motivo") ?: ""
+                    val email = document.getString("email") ?: ""
+                    val creation_date = document.getDate("creation_date") ?: Date()
+                    val nome = document.getString("nome") ?: ""
+                    val tipo = document.getString("tipo") ?: ""
+                    val condicao = document.getString("condicao") ?: ""
+                    val descricao = document.getString("descricao") ?: ""
+                    val imagemUrl = document.getString("imagemUrl") ?: ""
+                    val listaBens = document.getString("listabens") ?: ""
+                    val quantidade = document.getString("quantidade") ?: ""
+                    val status = document.getString("status") ?: ""
+                    Tickets(
+                        id,
+                        anuncio_id,
+                        anuncio_titulo,
+                        motivo,
+                        email,
+                        creation_date,
+                        nome,
+                        tipo,
+                        condicao,
+                        descricao,
+                        imagemUrl,
+                        listaBens,
+                        quantidade,
+                        status
+                    )
+                }
+                _ticketData.value = tickets
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao carregar dados dos tickets: ${e.message}")
+            }
+    }
+
+
 
     fun deleteAnuncio(anuncioId: String) {
         firestore.collection("anuncios").document(anuncioId)
@@ -503,6 +569,18 @@ class FirestoreViewModel : ViewModel() {
             .addOnSuccessListener {
                 // Atualiza a lista de anúncios após apagar
                 getAnunciosByLojaSocialId(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao deletar anúncio: ${e.message}")
+                _firestoreState.value = FirestoreState.Error("Erro ao deletar anúncio: ${e.message}")
+            }
+    }
+
+    fun deleteTicket(ticketId: String) {
+        firestore.collection("tickets").document(ticketId)
+            .delete()
+            .addOnSuccessListener {
+                getTicketDetails()
             }
             .addOnFailureListener { e ->
                 Log.e("FirestoreViewModel", "Erro ao deletar anúncio: ${e.message}")

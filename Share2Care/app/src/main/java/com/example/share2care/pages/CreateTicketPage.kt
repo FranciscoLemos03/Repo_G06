@@ -315,7 +315,7 @@ fun CreateTicketPage(
 
                         Button(
                             onClick = {
-                                firestoreViewModel.saveTicket(nome, email, motivo, listabens, quantidade, condicao, descricao, anuncioDetails.id, anuncioDetails.tipo, creationDate, "")
+                                firestoreViewModel.saveTicket(nome, email, motivo, listabens, quantidade, condicao, descricao, anuncioDetails.id, anuncioDetails.tipo, creationDate, "", anuncioDetails.titulo)
                                 Toast.makeText(
                                     context,
                                     "Ticket criado com sucesso",
@@ -549,7 +549,8 @@ fun CreateTicketPage(
                                         anuncioDetails.id,
                                         anuncioDetails.tipo,
                                         creationDate,
-                                        imageUrl
+                                        imageUrl,
+                                        anuncioDetails.titulo
                                     )
                                     Toast.makeText(
                                         context,
