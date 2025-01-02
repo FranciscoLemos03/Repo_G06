@@ -52,7 +52,7 @@ class FirestoreViewModel : ViewModel() {
         val anuncio_id: String = "",
         val anuncio_titulo: String = "",
         val motivo: String = "",
-        val email: String? = null,
+        val email: String = "",
         val creation_date: Date = Date(),
         val nome: String = "",
         val tipo: String = "",
@@ -256,6 +256,49 @@ class FirestoreViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
+    }
+
+    fun acceptTicket(
+        ticketId: String, nome: String, email: String, motivo: String, listabens: String, quantidade: String,
+        condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String,
+        dataCriacao: Date, imagemUrl: String?, tituloAnuncio: String?
+    ) {
+
+        val updatedData = when (tipoAnuncio) {
+            "Voluntario" -> mapOf(
+                "nome" to nome,
+                "email" to email,
+                "motivo" to motivo,
+                "tipo" to "Voluntario",
+                "anuncio_id" to anuncioId,
+                "creation_date" to dataCriacao,
+                "anuncio_titulo" to tituloAnuncio,
+                "status" to "Aprovado"
+            )
+            "Bens" -> mapOf(
+                "listabens" to listabens,
+                "quantidade" to quantidade,
+                "condicao" to condicao,
+                "descricao" to descricao,
+                "tipo" to "Bens",
+                "anuncio_id" to anuncioId,
+                "creation_date" to dataCriacao,
+                "imagemUrl" to imagemUrl,
+                "anuncio_titulo" to tituloAnuncio,
+                "status" to "Aprovado"
+            )
+            else -> emptyMap()
+        }
+
+        firestore.collection("tickets").document(ticketId).update(updatedData)
+            .addOnSuccessListener {
+                _firestoreState.value = FirestoreState.Success
+                getTicketDetails()
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+            }
+
     }
 
     // Função para atualizar dados do anuncio
@@ -520,7 +563,9 @@ class FirestoreViewModel : ViewModel() {
     }
 
     fun getTicketDetails() {
-        firestore.collection("tickets").get()
+        firestore.collection("tickets")
+            .whereEqualTo("status", "Pendente")
+            .get()
             .addOnSuccessListener { documents ->
                 val tickets = documents.mapNotNull { document ->
                     val id = document.id
@@ -571,8 +616,8 @@ class FirestoreViewModel : ViewModel() {
                 getAnunciosByLojaSocialId(FirebaseAuth.getInstance().currentUser?.uid ?: "")
             }
             .addOnFailureListener { e ->
-                Log.e("FirestoreViewModel", "Erro ao deletar anúncio: ${e.message}")
-                _firestoreState.value = FirestoreState.Error("Erro ao deletar anúncio: ${e.message}")
+                Log.e("FirestoreViewModel", "Erro ao apagar anúncio: ${e.message}")
+                _firestoreState.value = FirestoreState.Error("Erro ao apagar anúncio: ${e.message}")
             }
     }
 
@@ -583,8 +628,8 @@ class FirestoreViewModel : ViewModel() {
                 getTicketDetails()
             }
             .addOnFailureListener { e ->
-                Log.e("FirestoreViewModel", "Erro ao deletar anúncio: ${e.message}")
-                _firestoreState.value = FirestoreState.Error("Erro ao deletar anúncio: ${e.message}")
+                Log.e("FirestoreViewModel", "Erro ao apagar anúncio: ${e.message}")
+                _firestoreState.value = FirestoreState.Error("Erro ao apagar anúncio: ${e.message}")
             }
     }
 

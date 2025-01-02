@@ -1,6 +1,6 @@
 package com.example.share2care.pages
 
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -80,8 +80,7 @@ fun TicketsPage(navController: NavController, authViewModel: AuthViewModel) {
                 confirmButton = {
                     TextButton(onClick = {
                         ticketToDelete?.let { id ->
-
-                            firestoreViewModel.deleteTicket(id)
+                                firestoreViewModel.deleteTicket(id)
                         }
                         showDeleteDialog = false
                     }) {
@@ -147,7 +146,7 @@ fun TicketsPage(navController: NavController, authViewModel: AuthViewModel) {
                                 showDeleteDialog = true
                             },
                             aceitar = {
-                                Log.d("aa", "aceitar")
+                                firestoreViewModel.acceptTicket(ticket.id, ticket.nome, ticket.email, ticket.motivo, ticket.listaBens, ticket.quantidade, ticket.condicao, ticket.descricao, ticket.anuncio_id, ticket.tipo, ticket.creation_date, ticket.imagemUrl, ticket.anuncio_titulo)
                             },
                             redirecionar = {
                                 navController.navigate("announceDetails/${ticket.anuncio_id}")
