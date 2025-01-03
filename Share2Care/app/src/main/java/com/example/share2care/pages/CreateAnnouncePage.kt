@@ -82,6 +82,7 @@ fun CreateAnnouncePage(navController: NavController, authViewModel: AuthViewMode
 
     var titulo by remember { mutableStateOf("") }
     var motivo by remember { mutableStateOf("") }
+
     var meta by remember { mutableStateOf("") }
     var necessidades by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
