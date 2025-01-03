@@ -108,7 +108,7 @@ fun Announce(tipo: String, titulo: String, imageUrl: String?, creationDate: Date
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Text(
-                        text = SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(creationDate),
+                        text = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "PT")).format(creationDate),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF9E9E9E)
                     )

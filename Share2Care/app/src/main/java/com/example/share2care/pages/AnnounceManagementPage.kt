@@ -73,6 +73,7 @@ fun AnnounceManagementPage(navController: NavController, authViewModel: AuthView
             isLoading = false // booleano para validar se os dados já foram carregados
         }
     }
+
     if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),

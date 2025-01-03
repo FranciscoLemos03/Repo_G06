@@ -63,6 +63,20 @@ class FirestoreViewModel : ViewModel() {
         val quantidade: String = "",
         val status: String = ""
     )
+    data class AgregadosData(
+        val id: String = "",
+        val num_doc: String = "",
+        val data_criacao: Date = Date(),
+        val loja_id: String = ""
+    )
+    data class BeneficiarioData(
+        val id: String,
+        val agregado_id: String,
+        val nome: String,
+        val telemovel: String,
+        val nacionalidade: String,
+        val limite: Boolean
+    )
 
     private val _lojaSocialData = MutableLiveData<LojaSocialData>()
     val lojaSocialData: LiveData<LojaSocialData> = _lojaSocialData
@@ -72,6 +86,12 @@ class FirestoreViewModel : ViewModel() {
 
     private val _allAnuncios = MutableLiveData<List<AllAnuncios>>()
     val allAnuncios: LiveData<List<AllAnuncios>> get() = _allAnuncios
+
+    private val _agregadoData = MutableLiveData<List<AgregadosData>>()
+    val agregadoData: LiveData<List<AgregadosData>> = _agregadoData
+
+    private val _beneficiarioData = MutableLiveData<List<BeneficiarioData>>()
+    val beneficiarioData: LiveData<List<BeneficiarioData>> = _beneficiarioData
 
     private val _ticketData = MutableLiveData<List<Tickets>>()
     val ticketData: LiveData<List<Tickets>> = _ticketData
@@ -96,8 +116,8 @@ class FirestoreViewModel : ViewModel() {
             }
     }
 
-    private fun generateUniqueId(onComplete: (String) -> Unit) {
-        val counterRef = firestore.collection("counters").document("announcements_counter")
+    private fun generateUniqueId(document: String,onComplete: (String) -> Unit) {
+        val counterRef = firestore.collection("counters").document(document)
 
         firestore.runTransaction { transaction ->
             val snapshot = transaction.get(counterRef)
@@ -118,27 +138,48 @@ class FirestoreViewModel : ViewModel() {
         }
     }
 
-    private fun generateUniqueIdTickets(onComplete: (String) -> Unit) {
-        val counterRef = firestore.collection("counters").document("tickets_counter")
+    fun saveAgregado(numdoc: String, dataCriacao: FieldValue, lojaSocialID: String) {
 
-        firestore.runTransaction { transaction ->
-            val snapshot = transaction.get(counterRef)
-            val currentCount = if (snapshot.exists()) {
-                snapshot.getLong("count") ?: 0
-            } else {
-                0
-            }
+        generateUniqueId("agregados_counter"){ uniqueId ->
 
-            val newCount = currentCount + 1
-            transaction.set(counterRef, mapOf("count" to newCount))
-            newCount
-        }.addOnSuccessListener { newId ->
-            onComplete(newId.toString())
-        }.addOnFailureListener { e ->
-            Log.e("FirestoreViewModel", "Erro ao gerar ID: ${e.message}")
-            _firestoreState.value = FirestoreState.Error("Erro ao gerar ID: ${e.message}")
+            val agregadoMap = mapOf(
+                    "num_doc" to numdoc,
+                    "data_criacao" to dataCriacao,
+                    "lojaSocialID" to lojaSocialID
+            )
+
+            firestore.collection("agregados").document(uniqueId).set(agregadoMap)
+                .addOnSuccessListener {
+                    _firestoreState.value = FirestoreState.Success
+                }
+                .addOnFailureListener { e ->
+                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do agregado: ${e.message}")
+                }
         }
     }
+
+    fun saveBeneficiario(telemovel: String, nome: String, nacionalidade: String, agregadoID: String) {
+
+        generateUniqueId("beneficiarios_counter"){ uniqueId ->
+
+            val BeneficiarioMap = mapOf(
+                "telemovel" to telemovel,
+                "nome" to nome,
+                "nacionalidade" to nacionalidade,
+                "agregado_id" to agregadoID,
+                "limite" to false
+            )
+
+            firestore.collection("beneficiarios").document(uniqueId).set(BeneficiarioMap)
+                .addOnSuccessListener {
+                    _firestoreState.value = FirestoreState.Success
+                }
+                .addOnFailureListener { e ->
+                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do beneficiario: ${e.message}")
+                }
+        }
+    }
+
 
     fun saveAnnounce(
         titulo: String, motivo: String, meta: String, necessidades: String, descricao: String,
@@ -149,7 +190,7 @@ class FirestoreViewModel : ViewModel() {
             return
         }
 
-        generateUniqueId{ uniqueId ->
+        generateUniqueId("announcements_counter"){ uniqueId ->
 
             val announceMap = when (tipoanuncio) {
                 0 -> mapOf(
@@ -203,7 +244,7 @@ class FirestoreViewModel : ViewModel() {
         nome: String, email: String, motivo: String, listabens: String, quantidade: String,
         condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String ,dataCriacao: FieldValue, imagemUrl: String?, tituloAnuncio: String?
     ) {
-        generateUniqueIdTickets{ uniqueId ->
+        generateUniqueId("tickets_counter"){ uniqueId ->
 
             val ticketMap = when (tipoAnuncio) {
                 "Voluntariado" -> mapOf(
@@ -250,6 +291,38 @@ class FirestoreViewModel : ViewModel() {
         )
 
         firestore.collection("lojaSocial").document(uid).update(updatedData)
+            .addOnSuccessListener {
+                _firestoreState.value = FirestoreState.Success
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+            }
+    }
+
+    fun updateAgregadoDetails(id: String, num_doc: String, creationDate: Date, loja_id: String) {
+        val agregado = mapOf(
+            "num_doc" to num_doc,
+            "data_criacao" to creationDate,
+            "lojaSocialID" to loja_id
+        )
+
+        firestore.collection("agregados").document(id).update(agregado)
+            .addOnSuccessListener {
+                _firestoreState.value = FirestoreState.Success
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+            }
+    }
+
+    fun updateBeneficiarioDetails(id: String, nome: String, telemovel: String, nacionalidade: String) {
+        val beneficiarioUpdated = mapOf(
+            "nome" to nome,
+            "telemovel" to telemovel,
+            "nacionalidade" to nacionalidade
+        )
+
+        firestore.collection("beneficiarios").document(id).update(beneficiarioUpdated)
             .addOnSuccessListener {
                 _firestoreState.value = FirestoreState.Success
             }
@@ -407,6 +480,191 @@ class FirestoreViewModel : ViewModel() {
         }
     }
 
+    fun getAgregadosByLojaSocialId(lojaSocialId: String) {
+        firestore.collection("agregados")
+            .whereEqualTo("lojaSocialID", lojaSocialId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val agregados = querySnapshot.documents.mapNotNull { document ->
+                    val id = document.id
+                    val num_doc = document.getString("num_doc") ?: return@mapNotNull null
+                    val loja_id = document.getString("lojaSocialID") ?: return@mapNotNull null
+                    val creationDate = document.getDate("data_criacao") ?: return@mapNotNull null
+
+                    AgregadosData(
+                        id = id,
+                        num_doc = num_doc,
+                        data_criacao = creationDate,
+                        loja_id = loja_id,
+                    )
+                }
+                _agregadoData.postValue(agregados)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar anúncios: ${e.message}")
+                _firestoreState.postValue(FirestoreState.Error("Erro ao buscar anúncios: ${e.message}"))
+            }
+    }
+
+    fun getSpecificAgregadoDetails(agregado_id: String) {
+        firestore.collection("agregados").document(agregado_id).get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+
+                    val id = documentSnapshot.id
+                    val num_doc = documentSnapshot.getString("num_doc") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'num_doc' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val loja_id = documentSnapshot.getString("lojaSocialID") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'lojaSocialID' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val creationDate = documentSnapshot.getDate("data_criacao") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'data_criacao' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+
+                    val agregado = AgregadosData(
+                        id = id,
+                        num_doc = num_doc,
+                        data_criacao = creationDate,
+                        loja_id = loja_id
+                    )
+
+                    _agregadoData.postValue(listOf(agregado))
+                } else {
+                    Log.e("FirestoreViewModel", "Documento não encontrado no Firestore")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar documento: ${e.message}")
+            }
+    }
+
+    fun getSpecificBeneficiarioDetails(beneficiarioID: String) {
+        firestore.collection("beneficiarios").document(beneficiarioID).get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+
+                    val id = documentSnapshot.id
+                    val agregado_id = documentSnapshot.getString("agregado_id") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'agregado_id' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val nome = documentSnapshot.getString("nome") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'nacionalidade' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val telemovel = documentSnapshot.getString("telemovel") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'telemovel' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val nacionalidade = documentSnapshot.getString("nacionalidade") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'telemovel' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+                    val limite = documentSnapshot.getBoolean("limite") ?: run {
+                        Log.e("FirestoreViewModel", "Campo 'limite' não encontrado no documento")
+                        return@addOnSuccessListener
+                    }
+
+                    val beneficiario = BeneficiarioData(
+                        id = id,
+                        agregado_id = agregado_id ,
+                        nome = nome,
+                        telemovel = telemovel,
+                        nacionalidade = nacionalidade,
+                        limite = limite
+                    )
+
+                    _beneficiarioData.postValue(listOf(beneficiario))
+                } else {
+                    Log.e("FirestoreViewModel", "Documento não encontrado no Firestore")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar documento: ${e.message}")
+            }
+    }
+
+    fun getBeneficiariosByAgregado(agregadoID: String) {
+        firestore.collection("beneficiarios")
+            .whereEqualTo("agregado_id", agregadoID)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val beneficiarios = querySnapshot.documents.mapNotNull { document ->
+                    val id = document.id
+                    val nacionalidade = document.getString("nacionalidade") ?: return@mapNotNull null
+                    val nome = document.getString("nome") ?: return@mapNotNull null
+                    val telemovel = document.getString("telemovel") ?: return@mapNotNull null
+                    val agregado_id = document.getString("agregado_id") ?: return@mapNotNull null
+                    val limite = document.getBoolean("limite") ?: return@mapNotNull null
+
+                    BeneficiarioData(
+                        id = id,
+                        agregado_id = agregado_id,
+                        nome = nome,
+                        telemovel = telemovel,
+                        nacionalidade = nacionalidade,
+                        limite = limite
+                    )
+                }
+                _beneficiarioData.postValue(beneficiarios)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar anúncios: ${e.message}")
+                _firestoreState.postValue(FirestoreState.Error("Erro ao buscar anúncios: ${e.message}"))
+            }
+    }
+
+    fun getBeneficiariosFromLojaSocial(uid: String) {
+        firestore.collection("agregados")
+            .whereEqualTo("lojaSocialID", uid)
+            .get()
+            .addOnSuccessListener { agregadosSnapshot ->
+                val agregadoIds = agregadosSnapshot.documents.mapNotNull { it.id }
+
+                if (agregadoIds.isEmpty()) {
+                    Log.w("FirestoreViewModel", "Nenhum agregado encontrado para lojaSocialID: $uid")
+                    _beneficiarioData.postValue(emptyList())
+                    return@addOnSuccessListener
+                }
+
+                firestore.collection("beneficiarios")
+                    .whereIn("agregado_id", agregadoIds)
+                    .get()
+                    .addOnSuccessListener { beneficiariosSnapshot ->
+                        val beneficiarios = beneficiariosSnapshot.documents.mapNotNull { document ->
+                            val id = document.id
+                            val nacionalidade = document.getString("nacionalidade") ?: return@mapNotNull null
+                            val nome = document.getString("nome") ?: return@mapNotNull null
+                            val telemovel = document.getString("telemovel") ?: return@mapNotNull null
+                            val agregado_id = document.getString("agregado_id") ?: return@mapNotNull null
+                            val limite = document.getBoolean("limite") ?: return@mapNotNull null
+
+                            BeneficiarioData(
+                                id = id,
+                                agregado_id = agregado_id,
+                                nome = nome,
+                                telemovel = telemovel,
+                                nacionalidade = nacionalidade,
+                                limite = limite
+                            )
+                        }
+                        _beneficiarioData.postValue(beneficiarios)
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("FirestoreViewModel", "Erro ao buscar beneficiários: ${e.message}")
+                        _firestoreState.postValue(FirestoreState.Error("Erro ao buscar beneficiários: ${e.message}"))
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar agregados: ${e.message}")
+                _firestoreState.postValue(FirestoreState.Error("Erro ao buscar agregados: ${e.message}"))
+            }
+    }
+
     fun getAnunciosByLojaSocialId(lojaSocialId: String) {
         firestore.collection("anuncios")
             .whereEqualTo("loja_social_id", lojaSocialId)
@@ -500,8 +758,6 @@ class FirestoreViewModel : ViewModel() {
                 _allAnuncios.value = emptyList()
             }
     }
-
-
 
     fun getLojaSocialDetails(uid: String) {
         firestore.collection("lojaSocial").document(uid).get()
@@ -618,6 +874,54 @@ class FirestoreViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 Log.e("FirestoreViewModel", "Erro ao apagar anúncio: ${e.message}")
                 _firestoreState.value = FirestoreState.Error("Erro ao apagar anúncio: ${e.message}")
+            }
+    }
+
+    fun deleteBeneficiario(beneficiarioID: String) {
+        firestore.collection("beneficiarios").document(beneficiarioID)
+            .delete()
+            .addOnSuccessListener {
+                getBeneficiariosByAgregado(beneficiarioID)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao apagar beneficiario: ${e.message}")
+                _firestoreState.value = FirestoreState.Error("Erro ao apagar anúncio: ${e.message}")
+            }
+    }
+
+    fun deleteAgregado(AgregadoID: String) {
+        val firestore = FirebaseFirestore.getInstance()
+
+        firestore.collection("agregados").document(AgregadoID)
+            .delete()
+            .addOnSuccessListener {
+                firestore.collection("beneficiarios")
+                    .whereEqualTo("agregado_id", AgregadoID)
+                    .get()
+                    .addOnSuccessListener { querySnapshot ->
+                        val batch = firestore.batch()
+                        for (document in querySnapshot.documents) {
+                            batch.delete(document.reference)
+                        }
+
+                        batch.commit()
+                            .addOnSuccessListener {
+                                Log.d("FirestoreViewModel", "Beneficiários apagados com sucesso.")
+                                getTicketDetails()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("FirestoreViewModel", "Erro ao apagar Beneficiários: ${e.message}")
+                                _firestoreState.value = FirestoreState.Error("Erro ao apagar Beneficiários: ${e.message}")
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("FirestoreViewModel", "Erro ao buscar Beneficiários: ${e.message}")
+                        _firestoreState.value = FirestoreState.Error("Erro ao buscar Beneficiários: ${e.message}")
+                    }
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao apagar Agregado: ${e.message}")
+                _firestoreState.value = FirestoreState.Error("Erro ao apagar Agregado: ${e.message}")
             }
     }
 

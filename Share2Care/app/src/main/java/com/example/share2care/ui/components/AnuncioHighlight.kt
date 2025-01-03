@@ -96,7 +96,7 @@ fun AnnounceHighlight(imageUrl: String, tipo: String, lojaSocialName: String, cr
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = SimpleDateFormat("d MMMM yyyy", Locale.getDefault()).format(creationDate),
+                    text = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "PT")).format(creationDate),
                     color = Color.White,
                     fontSize = 12.sp
                 )

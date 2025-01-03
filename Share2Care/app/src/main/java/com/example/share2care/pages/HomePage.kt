@@ -85,7 +85,7 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
             ) {
                 Spacer(modifier = Modifier.height(100.dp))
 
-                HamburgerButton("Gestão de Beneficiários e Agregados", {}, R.drawable.userinterface )
+                HamburgerButton("Gestão de Beneficiários e Agregados", {navController.navigate("initialbeneficiario")}, R.drawable.userinterface )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
