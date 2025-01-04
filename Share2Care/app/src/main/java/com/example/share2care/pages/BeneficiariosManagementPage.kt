@@ -87,7 +87,7 @@ fun BeneficiariosManagementPage(navController: NavController, authViewModel: Aut
                 .fillMaxSize()
         ) {
 
-            Column (
+            Column(
                 modifier = Modifier
                     .padding(16.dp)
             ) {
@@ -196,4 +196,4 @@ fun BeneficiariosManagementPage(navController: NavController, authViewModel: Aut
             }
         }
     }
-}
+    }

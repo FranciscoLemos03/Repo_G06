@@ -13,6 +13,8 @@ import com.example.share2care.pages.AnnounceDetailsPage
 import com.example.share2care.pages.AnnounceManagementPage
 import com.example.share2care.pages.BeneficiarioProfilePage
 import com.example.share2care.pages.BeneficiariosManagementPage
+import com.example.share2care.pages.CheckInPage
+import com.example.share2care.pages.CheckOutPage
 import com.example.share2care.pages.CreateAgregadoPage
 import com.example.share2care.pages.CreateAnnouncePage
 import com.example.share2care.pages.CreateBeneficiarioPage
@@ -31,7 +33,7 @@ import com.example.share2care.ui.components.EditAnuncioPage
 
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
+fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel, firestoreViewModel: FirestoreViewModel){
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "initial", builder = {
@@ -144,5 +146,13 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
                 EditBeneficiarioPage(beneficiarioID, navController, authViewModel)
             }
         }
+        composable("CheckinPage") {
+            CheckInPage(navController = navController, authViewModel)
+        }
+
+        composable("CheckoutPage") {
+            CheckOutPage(navController = navController, authViewModel)
+        }
+
     })
 }
