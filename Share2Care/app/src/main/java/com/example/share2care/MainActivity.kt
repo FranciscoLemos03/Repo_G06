@@ -16,11 +16,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val authViewModel : AuthViewModel by viewModels()
-        val firestoreViewModel: FirestoreViewModel by viewModels()
         setContent {
             AppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNavigation(modifier= Modifier.padding(innerPadding), authViewModel = authViewModel, firestoreViewModel = firestoreViewModel)
+                    AppNavigation(modifier= Modifier.padding(innerPadding), authViewModel = authViewModel)
                 }
             }
         }
