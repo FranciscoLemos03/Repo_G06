@@ -937,6 +937,22 @@ class FirestoreViewModel : ViewModel() {
             }
     }
 
+    fun getSpecificBeneficiarioDetails(telemovel: String, onResult: (BeneficiarioData?) -> Unit) {
+        firestore.collection("beneficiarios")
+            .whereEqualTo("telemovel", telemovel)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val beneficiario = querySnapshot.documents.firstOrNull()?.toObject(BeneficiarioData::class.java)
+                onResult(beneficiario)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreViewModel", "Erro ao buscar beneficiário: ${e.message}")
+                onResult(null)
+            }
+    }
+
+
+
 }
 
 sealed class FirestoreState {
