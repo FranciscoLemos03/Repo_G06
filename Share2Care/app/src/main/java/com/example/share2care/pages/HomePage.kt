@@ -93,7 +93,7 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                HamburgerButton("Gestão de Check-Ins", {}, R.drawable.cartaovisitas )
+                HamburgerButton("Gestão de Check-Ins", {navController.navigate("checkin")}, R.drawable.cartaovisitas )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
