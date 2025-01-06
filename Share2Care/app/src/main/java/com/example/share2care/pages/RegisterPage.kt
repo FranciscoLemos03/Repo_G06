@@ -10,12 +10,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
@@ -37,6 +39,9 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
+
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
 
     val firestoreViewModel = FirestoreViewModel()
 
@@ -75,7 +80,10 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    emailError = !isEmailValid(it)
+                },
                 label = { Text("Email*") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -83,18 +91,29 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.background, // Removes border
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary, // Pink line when focused
+                    unfocusedBorderColor = if (emailError) Color.Red else  MaterialTheme.colorScheme.background, // Removes border
+                    focusedBorderColor = if (emailError) Color.Red else  MaterialTheme.colorScheme.secondary, // Pink line when focused
                     cursorColor = MaterialTheme.colorScheme.secondary,             // Pink cursor
                     unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,   // White label when unfocused
                     focusedLabelColor = MaterialTheme.colorScheme.onPrimary      // White label when focused
                 )
             )
+            if (emailError) {
+                Text(
+                    text = "Email inválido",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+                )
+            }
 
             //Password Button
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    passwordError = !isPasswordValid(it)
+                },
                 label = { Text("Palavra-passe*") },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -111,17 +130,38 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.background,
-                    focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                    unfocusedBorderColor = if (passwordError) Color.Red else MaterialTheme.colorScheme.background,
+                    focusedBorderColor = if (passwordError) Color.Red else MaterialTheme.colorScheme.secondary,
                     cursorColor = MaterialTheme.colorScheme.secondary,
                     unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
                     focusedLabelColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+            if (passwordError) {
+                Text(
+                    text = "A password deve ter uma maiúscula, um caractere especial e no mínimo 6 caracteres.",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start).padding(start = 16.dp)
+                )
+            }
 
             // Login Button
             Button(
-                onClick = { authViewModel.register(email,password,firestoreViewModel,navController) },
+                onClick = {
+
+                    if (emailError || passwordError || email.isEmpty() || password.isEmpty()) {
+                        Toast.makeText(
+                            context,
+                            "Registo Invalido",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+
+                        authViewModel.register(email, password, firestoreViewModel, navController)
+
+                    }
+              },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
@@ -131,5 +171,15 @@ fun RegisterPage(navController: NavController, authViewModel: AuthViewModel) {
             }
         }
     }
+}
+
+fun isEmailValid(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+
+fun isPasswordValid(password: String): Boolean {
+    val hasUpperCase = password.any { it.isUpperCase() }
+    val hasSpecialChar = password.any { !it.isLetterOrDigit() }
+    return password.length >= 6 && hasUpperCase && hasSpecialChar
 }
 
