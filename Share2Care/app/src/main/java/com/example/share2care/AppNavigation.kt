@@ -13,6 +13,8 @@ import com.example.share2care.pages.AnnounceDetailsPage
 import com.example.share2care.pages.AnnounceManagementPage
 import com.example.share2care.pages.BeneficiarioProfilePage
 import com.example.share2care.pages.BeneficiariosManagementPage
+import com.example.share2care.pages.CheckInPage
+import com.example.share2care.pages.CheckOutPage
 import com.example.share2care.pages.CreateAgregadoPage
 import com.example.share2care.pages.CreateAnnouncePage
 import com.example.share2care.pages.CreateBeneficiarioPage
@@ -143,6 +145,12 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
             beneficiarioID?.let {
                 EditBeneficiarioPage(beneficiarioID, navController, authViewModel)
             }
+        }
+        composable("checkin") {
+            CheckInPage(navController,authViewModel)
+        }
+        composable("checkout") {
+            CheckOutPage(navController,authViewModel)
         }
     })
 }
