@@ -72,7 +72,7 @@ fun TicketsPage(navController: NavController, authViewModel: AuthViewModel) {
                     showDeleteDialog = false
                 },
                 title = {
-                    Text(text = "Confirmar Exclusão")
+                    Text(text = "Recusar Ticket")
                 },
                 text = {
                     Text(text = "Tem certeza de que deseja recusar este ticket?")

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
@@ -48,10 +49,9 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BeneficiariosManagementPage(navController: NavController, authViewModel: AuthViewModel){
+fun BeneficiariosManagementPage(navController: NavController, authViewModel: AuthViewModel,firestoreViewModel: FirestoreViewModel = viewModel()){
 
     val authState = authViewModel.authState.observeAsState()
-    val firestoreViewModel = FirestoreViewModel()
     var procurar by remember { mutableStateOf("") }
     val beneficiario = firestoreViewModel.beneficiarioData.observeAsState(emptyList())
     val uid = FirebaseAuth.getInstance().currentUser?.uid
