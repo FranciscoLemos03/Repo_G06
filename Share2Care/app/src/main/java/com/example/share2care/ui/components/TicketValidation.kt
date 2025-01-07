@@ -115,7 +115,7 @@ fun TicketValidation(titulo: String?, listaBens: String?, quantidade: String?, c
                             .height(120.dp)
                             .clip(RoundedCornerShape(10.dp))
                     )
-                } else if (tipoTicket == "Voluntario") {
+                } else if (tipoTicket == "Voluntário") {
                     Image(
                         painter = painterResource(id = R.drawable.voluntario),
                         contentDescription = "Imagem",

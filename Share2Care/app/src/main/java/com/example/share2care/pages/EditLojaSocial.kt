@@ -22,6 +22,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.draw.clip
 import coil.compose.rememberImagePainter
+import com.example.share2care.R
+import com.example.share2care.ui.components.CircleButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,22 +75,32 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
             .background(MaterialTheme.colorScheme.background),
         color = MaterialTheme.colorScheme.background
     ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Top navigation button
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(WindowInsets.systemBars.asPaddingValues())
+                    .padding(horizontal = 16.dp, vertical = 20.dp) // Padding do topo de 20.dp
+                    .align(Alignment.TopStart) // Align to the top start of the screen
             ) {
-                CircularProgressIndicator()
+                CircleButton(
+                    onClick = {
+                        navController.navigate("home")
+                    },
+                    R.drawable.back
+                )
             }
-        } else {
+
+            // Center content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.Center), // Align to the center of the screen
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-
                 // Image Field
                 Row(
                     modifier = Modifier
@@ -106,7 +118,6 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                     Spacer(modifier = Modifier.width(16.dp))
 
                     selectedImageUri?.let {
-                        // Display the selected image
                         Image(
                             painter = rememberImagePainter(data = it),
                             contentDescription = "Imagem selecionada",
@@ -178,8 +189,17 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                     ),
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onBackground)
                 )
+            }
 
-                // Change Password Button
+            // Bottom buttons
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 20.dp) // Padding do fundo de 20.dp
+                    .align(Alignment.BottomCenter), // Align to the bottom of the screen
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Button(
                     onClick = {
                         authViewModel.sendPasswordResetEmail(
@@ -195,20 +215,24 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
                         .height(56.dp)
                 ) {
                     Text(text = "Mudar Password")
                 }
 
-                // Update Button
                 Button(
                     onClick = {
                         if (uid != null) {
-                            firestoreViewModel.uploadLojaSocialImageToFirebase(selectedImageUri.toString()) { imageUrl ->
-                                firestoreViewModel.updateLojaSocialDetails(uid, name, description, imageUrl)
+                            if (selectedImageUri == lojaSocialData?.imagemUrl) {
+                                firestoreViewModel.updateLojaSocialDetails(uid, name, description, selectedImageUri!!)
                                 Toast.makeText(context, "Dados atualizados com sucesso!", Toast.LENGTH_SHORT).show()
                                 navController.navigate("home")
+                            } else {
+                                firestoreViewModel.uploadLojaSocialImageToFirebase(selectedImageUri.toString()) { imageUrl ->
+                                    firestoreViewModel.updateLojaSocialDetails(uid, name, description, imageUrl)
+                                    Toast.makeText(context, "Dados atualizados com sucesso!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("home")
+                                }
                             }
                         } else {
                             Toast.makeText(context, "Erro ao obter ID da Loja Social", Toast.LENGTH_SHORT).show()
@@ -216,7 +240,6 @@ fun EditLojaSocial(navController: NavController, authViewModel: AuthViewModel) {
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
                         .height(56.dp)
                 ) {
                     Text(text = "Alterar")
