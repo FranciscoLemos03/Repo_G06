@@ -149,8 +149,17 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
         composable("checkin") {
             CheckInPage(navController,authViewModel)
         }
-        composable("checkout") {
-            CheckOutPage(navController,authViewModel)
+
+        composable(
+            route = "checkout/{beneficiarioID}/{nome}",
+            arguments = listOf(
+                navArgument("beneficiarioID") { type = NavType.StringType },
+                navArgument("nome") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val beneficiarioID = backStackEntry.arguments?.getString("beneficiarioID") ?: ""
+            val nome = backStackEntry.arguments?.getString("nome") ?: ""
+            CheckOutPage(beneficiarioID, nome, navController, authViewModel)
         }
     })
 }
