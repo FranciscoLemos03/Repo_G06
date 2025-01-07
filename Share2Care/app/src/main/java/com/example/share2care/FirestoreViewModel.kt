@@ -2,6 +2,7 @@ package com.example.share2care
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -759,7 +760,7 @@ class FirestoreViewModel : ViewModel() {
             }
     }
 
-    fun getLojaSocialDetails(uid: String) {
+        fun getLojaSocialDetails(uid: String) {
         firestore.collection("lojaSocial").document(uid).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
@@ -937,7 +938,129 @@ class FirestoreViewModel : ViewModel() {
             }
     }
 
+    fun getBeneficiarioByTelemovel(telemovel: String) {
+        firestore.collection("beneficiarios")
+            .whereEqualTo("telemovel", telemovel)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document = querySnapshot.documents[0] // Assume que o telemóvel é único
+                    val id = document.id
+                    val agregadoId = document.getString("agregado_id") ?: ""
+                    val nome = document.getString("nome") ?: ""
+                    val telemovel = document.getString("telemovel") ?: ""
+                    val nacionalidade = document.getString("nacionalidade") ?: ""
+                    val limite = document.getBoolean("limite") ?: false
+
+                    val beneficiario = BeneficiarioData(
+                        id = id,
+                        agregado_id = agregadoId,
+                        nome = nome,
+                        telemovel = telemovel,
+                        nacionalidade = nacionalidade,
+                        limite = limite
+                    )
+
+                    // Atualiza o LiveData com os dados do beneficiário encontrado
+                    _beneficiarioData.value = listOf(beneficiario)
+                } else {
+                    // Beneficiário não encontrado
+                    _beneficiarioData.value = emptyList()
+                    _firestoreState.value = FirestoreState.Error("Nenhum beneficiário encontrado com o telemóvel fornecido.")
+                }
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao buscar beneficiário: ${e.message}")
+            }
+    }
+
+
+    fun saveVisita(id_beneficiario: String, comportamento: String, motivo: String, produto_recolhido: String) {
+        generateUniqueId("visita_counter"){ uniqueId ->
+
+            val visitaMap = mapOf(
+                "id_beneficiario" to id_beneficiario,
+                "comportamento" to comportamento,
+                "motivo" to motivo,
+                "produto_recolhido" to produto_recolhido
+            )
+
+            firestore.collection("visita").document(uniqueId).set(visitaMap)
+                .addOnSuccessListener {
+                    _firestoreState.value = FirestoreState.Success
+                }
+                .addOnFailureListener { e ->
+                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados da Visita: ${e.message}")
+                }
+        }
+    }
+
+    fun updateBeneficiarioLimite(beneficiarioId: String, novoLimite: Boolean) {
+        val updatedData = mapOf(
+            "limite" to novoLimite
+        )
+
+        firestore.collection("beneficiarios").document(beneficiarioId).update(updatedData)
+            .addOnSuccessListener {
+                _firestoreState.value = FirestoreState.Success
+            }
+            .addOnFailureListener { e ->
+                _firestoreState.value = FirestoreState.Error("Erro ao atualizar o campo limite do beneficiário: ${e.message}")
+            }
+    }
+
+    fun getNumeroDeVisitas(beneficiarioID: String, onResult: (Int) -> Unit) {
+        firestore.collection("visita")
+            .whereEqualTo("id_beneficiario", beneficiarioID)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                onResult(querySnapshot.size()) // Conta o número de documentos
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Erro ao buscar número de visitas: ${e.message}")
+                onResult(0) // Retorna 0 em caso de erro
+            }
+    }
+
+    fun getVisitasByBeneficiario(
+        beneficiarioID: String,
+        onResult: (List<Pair<String, String>>, List<String>) -> Unit
+    ) {
+        firestore.collection("visita")
+            .whereEqualTo("id_beneficiario", beneficiarioID)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val comportamentos = mutableListOf<Pair<String, String>>()
+                val produtosRecolhidos = mutableListOf<String>()
+
+                querySnapshot.documents.forEach { document ->
+                    val comportamento = document.getString("comportamento") ?: ""
+                    val motivo = document.getString("motivo") ?: "N/A"
+                    val produto = document.getString("produto_recolhido") ?: ""
+
+                    // Apenas adiciona comportamentos não vazios
+                    if (comportamento.isNotEmpty()) {
+                        comportamentos.add(comportamento to motivo)
+                    }
+
+                    // Apenas adiciona produtos não vazios
+                    if (produto.isNotEmpty()) {
+                        produtosRecolhidos.add(produto)
+                    }
+                }
+
+                onResult(comportamentos, produtosRecolhidos)
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Erro ao buscar visitas: ${e.message}")
+                onResult(emptyList(), emptyList())
+            }
+    }
+
+
+
 }
+
 
 sealed class FirestoreState {
     data object Success : FirestoreState()
