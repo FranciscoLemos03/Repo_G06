@@ -12,6 +12,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
@@ -39,19 +41,27 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
-
+fun HomePage(navController: NavController, authViewModel: AuthViewModel, firestoreViewModel: FirestoreViewModel = viewModel()) {
+    // Authentication state observation
     val authState = authViewModel.authState.observeAsState()
-    val firestoreViewModel = FirestoreViewModel()
+
+    // Firestore data observation
     val allAnuncios by firestoreViewModel.allAnuncios.observeAsState(emptyList())
+
+    // Take the first 3 anuncios for display
     val destaqueAnuncios = allAnuncios.take(3)
 
-    var procurar by remember { mutableStateOf("") }
-    var selectedButton by remember { mutableStateOf("Todos") }
-    val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
-
+    // Remove the first 3 anuncios for filtering
     val anunciosSemOsPrimeirosTres = allAnuncios.drop(3)
 
+    // Filter options
+    val filters = listOf("Todos", "Voluntariado", "Doação monetária", "Doação de bens", "Noticia")
+
+    // Filter state
+    var procurar by remember { mutableStateOf("") }
+    var selectedButton by remember { mutableStateOf("Todos") }
+
+    // Filtered anuncios based on search and selected button
     val filteredAnuncios = anunciosSemOsPrimeirosTres.filter { anuncio ->
         (selectedButton == "Todos" || anuncio.tipo == selectedButton) &&
                 (procurar.isEmpty() ||
@@ -60,18 +70,54 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel) {
                         anuncio.tipo.contains(procurar, ignoreCase = true))
     }
 
+    // Drawer state management
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // Auth-based navigation
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("initial")
             is AuthState.Anonymous -> navController.navigate("homeAnonymous")
-            else -> {
-                firestoreViewModel.getAllAnunciosWithLojaDetails()
-            }
+            else -> firestoreViewModel.getAllAnunciosWithLojaDetails()
         }
     }
+
+    // UI for displaying anuncios
+    Column {
+        // Example of displaying destaqueAnuncios
+        destaqueAnuncios.forEach { anuncio ->
+            Text(text = anuncio.titulo)
+        }
+
+        // Example of search input
+        OutlinedTextField(
+            value = procurar,
+            onValueChange = { procurar = it },
+            label = { Text("Procurar") }
+        )
+
+        // Buttons for filters
+        Row {
+            filters.forEach { button ->
+                Button(
+                    onClick = { selectedButton = button },
+                    colors = ButtonDefaults.buttonColors(
+                         if (selectedButton == button) Color.Gray else Color.LightGray
+                    )
+                ) {
+                    Text(button)
+                }
+            }
+        }
+
+        // Display filtered anuncios
+        filteredAnuncios.forEach { anuncio ->
+            Text(text = anuncio.titulo)
+        }
+    }
+
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,

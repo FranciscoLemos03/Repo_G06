@@ -363,7 +363,26 @@ fun CreateAnnouncePage(navController: NavController, authViewModel: AuthViewMode
             DynamicButton(
                 text = "Enviar",
                 onClick = {
-                    if (uid != null) {
+                    val isTitleValid = titulo.isNotEmpty()
+                    val isMotivoValid = motivo.isNotEmpty()
+                    val isMetaValid = meta.isNotEmpty()
+                    val isNecessidadesValid = necessidades.isNotEmpty()
+                    val isDescricaoValid = descricao.isNotEmpty()
+                    val isLinkValid = link.isNotEmpty() && urlRegex.matches(link)
+                    val isRequisitosValid = requisitos.isNotEmpty()
+                    val isImageValid = !selectedImageUri.isNullOrEmpty() && selectedImageUri != "https://via.placeholder.com/150"
+
+                    val isValidForm = when (itemPosition.intValue) {
+                        0 -> isTitleValid && isMotivoValid && isMetaValid && isImageValid // Doação monetária
+                        1 -> isTitleValid && isNecessidadesValid // Doação de bens
+                        2 -> isTitleValid && isDescricaoValid && isLinkValid // Notícia
+                        3 -> isTitleValid && isRequisitosValid // Voluntariado
+                        else -> false
+                    }
+
+                    if (!isValidForm) {
+                        Toast.makeText(context, "Por favor, preencha todos os campos", Toast.LENGTH_SHORT).show()
+                    } else if (uid != null) {
                         firestoreViewModel.uploadAnuncioPhotoToFirebase(selectedImageUri.toString()) { imageUrl ->
                             firestoreViewModel.saveAnnounce(
                                 titulo,
@@ -380,7 +399,7 @@ fun CreateAnnouncePage(navController: NavController, authViewModel: AuthViewMode
                             )
                             Toast.makeText(
                                 context,
-                                "Anuncio criado com sucesso",
+                                "Anúncio criado com sucesso",
                                 Toast.LENGTH_SHORT
                             ).show()
                             navController.navigate("announceManagement")

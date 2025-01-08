@@ -2,6 +2,7 @@
 
 package com.example.share2care.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -11,20 +12,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.share2care.AuthViewModel
+import com.example.share2care.FirestoreViewModel
 import com.example.share2care.R
 import com.example.share2care.ui.components.CircleButton
 
 @Composable
-fun CheckOutPage(navController: NavController, authViewModel: AuthViewModel) {
-    var nome by remember { mutableStateOf("") }
+fun CheckOutPage(beneficiarioID: String, nomeInicial: String, navController: NavController, authViewModel: AuthViewModel, firestoreViewModel: FirestoreViewModel = viewModel()) {
+    var nome by remember { mutableStateOf(nomeInicial) }
     var motivo by remember { mutableStateOf("") }
+    var produtosRecolhidos by remember { mutableStateOf("") }
     var limitar by remember { mutableStateOf(false) }
     var comportamento by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val comportamentos = listOf("Bom", "Mau")
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier
@@ -73,6 +80,7 @@ fun CheckOutPage(navController: NavController, authViewModel: AuthViewModel) {
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent
                 ),
+                textStyle = LocalTextStyle.current.copy(color = Color.White),
                 enabled = false
             )
 
@@ -128,14 +136,36 @@ fun CheckOutPage(navController: NavController, authViewModel: AuthViewModel) {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Campo Motivo
+            if (comportamento != "Bom") {
+                TextField(
+                    value = motivo,
+                    onValueChange = { motivo = it },
+                    label = { Text("Motivo") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(vertical = 8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFF34334A),
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent
+                    )
+                )
+            }
+
+            // Produtos Recolhidos
+            Text(
+                text = "Produtos Recolhidos:",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
             TextField(
-                value = motivo,
-                onValueChange = { motivo = it },
-                label = { Text("Motivo") },
+                value = produtosRecolhidos,
+                onValueChange = { produtosRecolhidos = it },
+                label = { Text("Produtos") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(vertical = 8.dp),
+                    .height(100.dp),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color(0xFF34334A),
                     unfocusedIndicatorColor = Color.Transparent,
@@ -170,7 +200,27 @@ fun CheckOutPage(navController: NavController, authViewModel: AuthViewModel) {
 
             // Botão "Finalizar"
             Button(
-                onClick = {},
+                onClick = {
+                    when {
+                        comportamento == "Mau" && motivo.isBlank() -> {
+                            Toast.makeText(
+                                context,
+                                "Por favor, preencha o campo Motivo",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        else -> {
+                            firestoreViewModel.saveVisita(beneficiarioID, comportamento, motivo, produtosRecolhidos)
+                            firestoreViewModel.updateBeneficiarioLimite(beneficiarioID, limitar)
+                            navController.popBackStack()
+                            Toast.makeText(
+                                context,
+                                "CheckOut Finalizado com sucesso",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -178,6 +228,7 @@ fun CheckOutPage(navController: NavController, authViewModel: AuthViewModel) {
             ) {
                 Text("Finalizar", color = Color.White)
             }
+
         }
     }
 }

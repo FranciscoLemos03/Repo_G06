@@ -43,6 +43,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.share2care.AuthState
 import com.example.share2care.AuthViewModel
@@ -55,10 +56,9 @@ import com.google.firebase.auth.FirebaseAuth
 import java.util.Date
 
 @Composable
-fun AgregadoDetailsPage(AgregadoID: String, navController: NavController, authViewModel: AuthViewModel) {
+fun AgregadoDetailsPage(AgregadoID: String, navController: NavController, authViewModel: AuthViewModel, firestoreViewModel: FirestoreViewModel = viewModel()) {
     val context = LocalContext.current
     val authState = authViewModel.authState.observeAsState()
-    val firestoreViewModel = FirestoreViewModel()
     val agregados = firestoreViewModel.agregadoData.observeAsState(emptyList())
     val beneficiarios = firestoreViewModel.beneficiarioData.observeAsState(emptyList())
     val uid = FirebaseAuth.getInstance().currentUser?.uid
