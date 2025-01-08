@@ -1078,22 +1078,40 @@ class FirestoreViewModel : ViewModel() {
         val entries = mutableListOf<PieEntry>()
 
         try {
-            val querySnapshot = db.collection("beneficiarios").get().await()
+            // Step 1: Get the current lojaSocial ID
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                ?: throw IllegalStateException("User not authenticated")
 
-            // Group data by nationality and count the number of beneficiaries
+            // Step 2: Query the agregados collection to find all documents with matching lojaSocialID
+            val agregadosQuerySnapshot = db.collection("agregados")
+                .whereEqualTo("lojaSocialID", uid)
+                .get()
+                .await()
+
+            // Step 3: Extract all agregado_id values from the query results
+            val agregadoIds = agregadosQuerySnapshot.documents.mapNotNull { it.id }
+
+            // Step 4: Query the beneficiarios collection to get only those with matching agregado_id
+            val beneficiariosQuerySnapshot = db.collection("beneficiarios")
+                .whereIn("agregado_id", agregadoIds)
+                .get()
+                .await()
+
+            // Step 5: Group the filtered beneficiarios by nacionalidade and count them
             val nationalityCount = mutableMapOf<String, Int>()
 
-            querySnapshot.documents.forEach { document ->
+            beneficiariosQuerySnapshot.documents.forEach { document ->
                 val nationality = document.getString("nacionalidade") ?: "Unknown"
                 nationalityCount[nationality] = nationalityCount.getOrDefault(nationality, 0) + 1
             }
 
-            // Create PieEntry for each nationality and count
+            // Step 6: Create PieEntry for each nationality and count
             nationalityCount.forEach { (nationality, count) ->
                 entries.add(PieEntry(count.toFloat(), nationality))
             }
         } catch (e: Exception) {
             // Handle error if data fetch fails
+            e.printStackTrace() // Optional: Log the error for debugging
         }
 
         return entries
