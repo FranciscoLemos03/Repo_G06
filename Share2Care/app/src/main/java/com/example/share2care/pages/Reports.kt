@@ -52,7 +52,8 @@ fun ReportsScreen(navController: NavController, authViewModel: AuthViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(top = 20.dp,  bottom = 80.dp),
+            .padding(top = 20.dp,  bottom = 80.dp)
+            .padding(WindowInsets.systemBars.asPaddingValues()),
         color = MaterialTheme.colorScheme.background
     ) {
     Column(
