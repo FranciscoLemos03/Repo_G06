@@ -147,13 +147,14 @@ fun HomePage(navController: NavController, authViewModel: AuthViewModel, firesto
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                HamburgerButton("Gerir Reports", {}, R.drawable.estatisticas )
+                HamburgerButton("Gerir Reports", {navController.navigate("ReportsScreen")}, R.drawable.estatisticas )
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                HamburgerButton("Definições da Loja Social", { navController.navigate("editLojaSocial") }, R.drawable.gear )
+                HamburgerButton("Definições da Loja Social", { navController.navigate("editLojaSocial") }, R.drawable.gear)
 
                 Spacer(modifier = Modifier.height(40.dp))
+
 
                 HamburgerButton("Sair", { authViewModel.signout() }, R.drawable.sair )
             }

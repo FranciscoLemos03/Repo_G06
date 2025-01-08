@@ -6,11 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.tasks.await
 import java.util.Date
 import java.util.UUID
 
@@ -18,7 +20,12 @@ class FirestoreViewModel : ViewModel() {
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
-    data class LojaSocialData(val nome: String, val descricao: String, val imagemUrl: String? = null)
+    data class LojaSocialData(
+        val nome: String,
+        val descricao: String,
+        val imagemUrl: String? = null
+    )
+
     data class AnuncioData(
         val id: String,
         val titulo: String,
@@ -33,6 +40,7 @@ class FirestoreViewModel : ViewModel() {
         val tipo: String,
         val imagemUrl: String?
     )
+
     data class AllAnuncios(
         val id: String = "",
         val tipo: String = "",
@@ -44,10 +52,11 @@ class FirestoreViewModel : ViewModel() {
         val necessidades: String = "",
         val descricao: String = "",
         val link: String = "",
-        val requisitos:String = "",
+        val requisitos: String = "",
         val lojaSocialName: String = "",
         val imageUrlLojaSocial: String? = null
     )
+
     data class Tickets(
         val id: String = "",
         val anuncio_id: String = "",
@@ -64,12 +73,14 @@ class FirestoreViewModel : ViewModel() {
         val quantidade: String = "",
         val status: String = ""
     )
+
     data class AgregadosData(
         val id: String = "",
         val num_doc: String = "",
         val data_criacao: Date = Date(),
         val loja_id: String = ""
     )
+
     data class BeneficiarioData(
         val id: String,
         val agregado_id: String,
@@ -113,11 +124,12 @@ class FirestoreViewModel : ViewModel() {
                 _firestoreState.value = FirestoreState.Success
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao salvar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao salvar dados da Loja Social: ${e.message}")
             }
     }
 
-    private fun generateUniqueId(document: String,onComplete: (String) -> Unit) {
+    private fun generateUniqueId(document: String, onComplete: (String) -> Unit) {
         val counterRef = firestore.collection("counters").document(document)
 
         firestore.runTransaction { transaction ->
@@ -141,12 +153,12 @@ class FirestoreViewModel : ViewModel() {
 
     fun saveAgregado(numdoc: String, dataCriacao: FieldValue, lojaSocialID: String) {
 
-        generateUniqueId("agregados_counter"){ uniqueId ->
+        generateUniqueId("agregados_counter") { uniqueId ->
 
             val agregadoMap = mapOf(
-                    "num_doc" to numdoc,
-                    "data_criacao" to dataCriacao,
-                    "lojaSocialID" to lojaSocialID
+                "num_doc" to numdoc,
+                "data_criacao" to dataCriacao,
+                "lojaSocialID" to lojaSocialID
             )
 
             firestore.collection("agregados").document(uniqueId).set(agregadoMap)
@@ -154,14 +166,20 @@ class FirestoreViewModel : ViewModel() {
                     _firestoreState.value = FirestoreState.Success
                 }
                 .addOnFailureListener { e ->
-                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do agregado: ${e.message}")
+                    _firestoreState.value =
+                        FirestoreState.Error("Erro ao guardar dados do agregado: ${e.message}")
                 }
         }
     }
 
-    fun saveBeneficiario(telemovel: String, nome: String, nacionalidade: String, agregadoID: String) {
+    fun saveBeneficiario(
+        telemovel: String,
+        nome: String,
+        nacionalidade: String,
+        agregadoID: String
+    ) {
 
-        generateUniqueId("beneficiarios_counter"){ uniqueId ->
+        generateUniqueId("beneficiarios_counter") { uniqueId ->
 
             val BeneficiarioMap = mapOf(
                 "telemovel" to telemovel,
@@ -176,22 +194,33 @@ class FirestoreViewModel : ViewModel() {
                     _firestoreState.value = FirestoreState.Success
                 }
                 .addOnFailureListener { e ->
-                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do beneficiario: ${e.message}")
+                    _firestoreState.value =
+                        FirestoreState.Error("Erro ao guardar dados do beneficiario: ${e.message}")
                 }
         }
     }
 
 
     fun saveAnnounce(
-        titulo: String, motivo: String, meta: String, necessidades: String, descricao: String,
-        link: String, requisitos: String, lojaSocial: String, dataCriacao: FieldValue, tipoanuncio: Int, imageURL: String
+        titulo: String,
+        motivo: String,
+        meta: String,
+        necessidades: String,
+        descricao: String,
+        link: String,
+        requisitos: String,
+        lojaSocial: String,
+        dataCriacao: FieldValue,
+        tipoanuncio: Int,
+        imageURL: String
     ) {
         if (lojaSocial.isBlank()) {
-            _firestoreState.value = FirestoreState.Error("Precisa de estar logado para poder criar anuncio")
+            _firestoreState.value =
+                FirestoreState.Error("Precisa de estar logado para poder criar anuncio")
             return
         }
 
-        generateUniqueId("announcements_counter"){ uniqueId ->
+        generateUniqueId("announcements_counter") { uniqueId ->
 
             val announceMap = when (tipoanuncio) {
                 0 -> mapOf(
@@ -203,6 +232,7 @@ class FirestoreViewModel : ViewModel() {
                     "creation_date" to dataCriacao,
                     "imagemUrl" to imageURL
                 )
+
                 1 -> mapOf(
                     "titulo" to titulo,
                     "necessidades" to necessidades,
@@ -211,6 +241,7 @@ class FirestoreViewModel : ViewModel() {
                     "creation_date" to dataCriacao,
                     "imagemUrl" to imageURL
                 )
+
                 2 -> mapOf(
                     "titulo" to titulo,
                     "descricao" to descricao,
@@ -220,6 +251,7 @@ class FirestoreViewModel : ViewModel() {
                     "creation_date" to dataCriacao,
                     "imagemUrl" to imageURL
                 )
+
                 3 -> mapOf(
                     "titulo" to titulo,
                     "requisitos" to requisitos,
@@ -228,6 +260,7 @@ class FirestoreViewModel : ViewModel() {
                     "creation_date" to dataCriacao,
                     "imagemUrl" to imageURL
                 )
+
                 else -> emptyMap()
             }
 
@@ -236,16 +269,27 @@ class FirestoreViewModel : ViewModel() {
                     _firestoreState.value = FirestoreState.Success
                 }
                 .addOnFailureListener { e ->
-                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do anúncio: ${e.message}")
+                    _firestoreState.value =
+                        FirestoreState.Error("Erro ao guardar dados do anúncio: ${e.message}")
                 }
         }
     }
 
     fun saveTicket(
-        nome: String, email: String, motivo: String, listabens: String, quantidade: String,
-        condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String ,dataCriacao: FieldValue, imagemUrl: String?, tituloAnuncio: String?
+        nome: String,
+        email: String,
+        motivo: String,
+        listabens: String,
+        quantidade: String,
+        condicao: String,
+        descricao: String,
+        anuncioId: String,
+        tipoAnuncio: String,
+        dataCriacao: FieldValue,
+        imagemUrl: String?,
+        tituloAnuncio: String?
     ) {
-        generateUniqueId("tickets_counter"){ uniqueId ->
+        generateUniqueId("tickets_counter") { uniqueId ->
 
             val ticketMap = when (tipoAnuncio) {
                 "Voluntariado" -> mapOf(
@@ -258,6 +302,7 @@ class FirestoreViewModel : ViewModel() {
                     "anuncio_titulo" to tituloAnuncio,
                     "status" to "Pendente"
                 )
+
                 "Doação de bens" -> mapOf(
                     "listabens" to listabens,
                     "quantidade" to quantidade,
@@ -270,6 +315,7 @@ class FirestoreViewModel : ViewModel() {
                     "anuncio_titulo" to tituloAnuncio,
                     "status" to "Pendente"
                 )
+
                 else -> emptyMap()
             }
 
@@ -278,7 +324,8 @@ class FirestoreViewModel : ViewModel() {
                     _firestoreState.value = FirestoreState.Success
                 }
                 .addOnFailureListener { e ->
-                    _firestoreState.value = FirestoreState.Error("Erro ao guardar dados do ticket: ${e.message}")
+                    _firestoreState.value =
+                        FirestoreState.Error("Erro ao guardar dados do ticket: ${e.message}")
                 }
         }
     }
@@ -296,7 +343,8 @@ class FirestoreViewModel : ViewModel() {
                 _firestoreState.value = FirestoreState.Success
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
     }
 
@@ -312,11 +360,17 @@ class FirestoreViewModel : ViewModel() {
                 _firestoreState.value = FirestoreState.Success
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
     }
 
-    fun updateBeneficiarioDetails(id: String, nome: String, telemovel: String, nacionalidade: String) {
+    fun updateBeneficiarioDetails(
+        id: String,
+        nome: String,
+        telemovel: String,
+        nacionalidade: String
+    ) {
         val beneficiarioUpdated = mapOf(
             "nome" to nome,
             "telemovel" to telemovel,
@@ -328,14 +382,25 @@ class FirestoreViewModel : ViewModel() {
                 _firestoreState.value = FirestoreState.Success
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
     }
 
     fun acceptTicket(
-        ticketId: String, nome: String, email: String, motivo: String, listabens: String, quantidade: String,
-        condicao: String, descricao: String, anuncioId: String, tipoAnuncio: String,
-        dataCriacao: Date, imagemUrl: String?, tituloAnuncio: String?
+        ticketId: String,
+        nome: String,
+        email: String,
+        motivo: String,
+        listabens: String,
+        quantidade: String,
+        condicao: String,
+        descricao: String,
+        anuncioId: String,
+        tipoAnuncio: String,
+        dataCriacao: Date,
+        imagemUrl: String?,
+        tituloAnuncio: String?
     ) {
 
         val updatedData = when (tipoAnuncio) {
@@ -349,6 +414,7 @@ class FirestoreViewModel : ViewModel() {
                 "anuncio_titulo" to tituloAnuncio,
                 "status" to "Aprovado"
             )
+
             "Bens" -> mapOf(
                 "listabens" to listabens,
                 "quantidade" to quantidade,
@@ -361,6 +427,7 @@ class FirestoreViewModel : ViewModel() {
                 "anuncio_titulo" to tituloAnuncio,
                 "status" to "Aprovado"
             )
+
             else -> emptyMap()
         }
 
@@ -370,13 +437,27 @@ class FirestoreViewModel : ViewModel() {
                 getTicketDetails()
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
 
     }
 
     // Função para atualizar dados do anuncio
-    fun updateAnuncioDetails(announceID: String, titulo: String, motivo: String, meta: String, necessidades: String, descricao: String, link: String, requisitos: String, lojaSocial: String, dataCriacao: Date?, tipo: String, imageURL: String) {
+    fun updateAnuncioDetails(
+        announceID: String,
+        titulo: String,
+        motivo: String,
+        meta: String,
+        necessidades: String,
+        descricao: String,
+        link: String,
+        requisitos: String,
+        lojaSocial: String,
+        dataCriacao: Date?,
+        tipo: String,
+        imageURL: String
+    ) {
         val announceMap = when (tipo) {
             "Doação monetária" -> mapOf(
                 "titulo" to titulo,
@@ -387,6 +468,7 @@ class FirestoreViewModel : ViewModel() {
                 "creation_date" to dataCriacao,
                 "imagemUrl" to imageURL
             )
+
             "Doação de bens" -> mapOf(
                 "titulo" to titulo,
                 "necessidades" to necessidades,
@@ -395,6 +477,7 @@ class FirestoreViewModel : ViewModel() {
                 "creation_date" to dataCriacao,
                 "imagemUrl" to imageURL
             )
+
             "Noticia" -> mapOf(
                 "titulo" to titulo,
                 "descricao" to descricao,
@@ -404,6 +487,7 @@ class FirestoreViewModel : ViewModel() {
                 "creation_date" to dataCriacao,
                 "imagemUrl" to imageURL
             )
+
             "Voluntariado" -> mapOf(
                 "titulo" to titulo,
                 "requisitos" to requisitos,
@@ -412,6 +496,7 @@ class FirestoreViewModel : ViewModel() {
                 "creation_date" to dataCriacao,
                 "imagemUrl" to imageURL
             )
+
             else -> emptyMap()
         }
 
@@ -420,12 +505,14 @@ class FirestoreViewModel : ViewModel() {
                 _firestoreState.value = FirestoreState.Success
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao atualizar dados da Loja Social: ${e.message}")
             }
     }
 
     fun uploadLojaSocialImageToFirebase(imageUri: String, onComplete: (String) -> Unit) {
-        val storageRef = FirebaseStorage.getInstance().reference.child("LojaSocialLogos/${UUID.randomUUID()}")
+        val storageRef =
+            FirebaseStorage.getInstance().reference.child("LojaSocialLogos/${UUID.randomUUID()}")
         val uploadTask = storageRef.putFile(Uri.parse(imageUri))
 
         uploadTask.continueWithTask { task ->
@@ -438,13 +525,17 @@ class FirestoreViewModel : ViewModel() {
                 val downloadUri = task.result
                 onComplete(downloadUri.toString())
             } else {
-                Log.e("FirestoreViewModel", "Erro ao fazer upload da imagem: ${task.exception?.message}")
+                Log.e(
+                    "FirestoreViewModel",
+                    "Erro ao fazer upload da imagem: ${task.exception?.message}"
+                )
             }
         }
     }
 
     fun uploadAnuncioPhotoToFirebase(imageUri: String, onComplete: (String) -> Unit) {
-        val storageRef = FirebaseStorage.getInstance().reference.child("AnuncioPhotos/${UUID.randomUUID()}")
+        val storageRef =
+            FirebaseStorage.getInstance().reference.child("AnuncioPhotos/${UUID.randomUUID()}")
         val uploadTask = storageRef.putFile(Uri.parse(imageUri))
 
         uploadTask.continueWithTask { task ->
@@ -457,7 +548,10 @@ class FirestoreViewModel : ViewModel() {
                 val downloadUri = task.result
                 onComplete(downloadUri.toString())
             } else {
-                Log.e("FirestoreViewModel", "Erro ao fazer upload da imagem: ${task.exception?.message}")
+                Log.e(
+                    "FirestoreViewModel",
+                    "Erro ao fazer upload da imagem: ${task.exception?.message}"
+                )
             }
         }
     }
@@ -476,7 +570,10 @@ class FirestoreViewModel : ViewModel() {
                 val downloadUri = task.result
                 onComplete(downloadUri.toString())
             } else {
-                Log.e("FirestoreViewModel", "Erro ao fazer upload da imagem: ${task.exception?.message}")
+                Log.e(
+                    "FirestoreViewModel",
+                    "Erro ao fazer upload da imagem: ${task.exception?.message}"
+                )
             }
         }
     }
@@ -518,11 +615,17 @@ class FirestoreViewModel : ViewModel() {
                         return@addOnSuccessListener
                     }
                     val loja_id = documentSnapshot.getString("lojaSocialID") ?: run {
-                        Log.e("FirestoreViewModel", "Campo 'lojaSocialID' não encontrado no documento")
+                        Log.e(
+                            "FirestoreViewModel",
+                            "Campo 'lojaSocialID' não encontrado no documento"
+                        )
                         return@addOnSuccessListener
                     }
                     val creationDate = documentSnapshot.getDate("data_criacao") ?: run {
-                        Log.e("FirestoreViewModel", "Campo 'data_criacao' não encontrado no documento")
+                        Log.e(
+                            "FirestoreViewModel",
+                            "Campo 'data_criacao' não encontrado no documento"
+                        )
                         return@addOnSuccessListener
                     }
 
@@ -550,11 +653,17 @@ class FirestoreViewModel : ViewModel() {
 
                     val id = documentSnapshot.id
                     val agregado_id = documentSnapshot.getString("agregado_id") ?: run {
-                        Log.e("FirestoreViewModel", "Campo 'agregado_id' não encontrado no documento")
+                        Log.e(
+                            "FirestoreViewModel",
+                            "Campo 'agregado_id' não encontrado no documento"
+                        )
                         return@addOnSuccessListener
                     }
                     val nome = documentSnapshot.getString("nome") ?: run {
-                        Log.e("FirestoreViewModel", "Campo 'nacionalidade' não encontrado no documento")
+                        Log.e(
+                            "FirestoreViewModel",
+                            "Campo 'nacionalidade' não encontrado no documento"
+                        )
                         return@addOnSuccessListener
                     }
                     val telemovel = documentSnapshot.getString("telemovel") ?: run {
@@ -572,7 +681,7 @@ class FirestoreViewModel : ViewModel() {
 
                     val beneficiario = BeneficiarioData(
                         id = id,
-                        agregado_id = agregado_id ,
+                        agregado_id = agregado_id,
                         nome = nome,
                         telemovel = telemovel,
                         nacionalidade = nacionalidade,
@@ -596,7 +705,8 @@ class FirestoreViewModel : ViewModel() {
             .addOnSuccessListener { querySnapshot ->
                 val beneficiarios = querySnapshot.documents.mapNotNull { document ->
                     val id = document.id
-                    val nacionalidade = document.getString("nacionalidade") ?: return@mapNotNull null
+                    val nacionalidade =
+                        document.getString("nacionalidade") ?: return@mapNotNull null
                     val nome = document.getString("nome") ?: return@mapNotNull null
                     val telemovel = document.getString("telemovel") ?: return@mapNotNull null
                     val agregado_id = document.getString("agregado_id") ?: return@mapNotNull null
@@ -627,7 +737,10 @@ class FirestoreViewModel : ViewModel() {
                 val agregadoIds = agregadosSnapshot.documents.mapNotNull { it.id }
 
                 if (agregadoIds.isEmpty()) {
-                    Log.w("FirestoreViewModel", "Nenhum agregado encontrado para lojaSocialID: $uid")
+                    Log.w(
+                        "FirestoreViewModel",
+                        "Nenhum agregado encontrado para lojaSocialID: $uid"
+                    )
                     _beneficiarioData.postValue(emptyList())
                     return@addOnSuccessListener
                 }
@@ -638,10 +751,13 @@ class FirestoreViewModel : ViewModel() {
                     .addOnSuccessListener { beneficiariosSnapshot ->
                         val beneficiarios = beneficiariosSnapshot.documents.mapNotNull { document ->
                             val id = document.id
-                            val nacionalidade = document.getString("nacionalidade") ?: return@mapNotNull null
+                            val nacionalidade =
+                                document.getString("nacionalidade") ?: return@mapNotNull null
                             val nome = document.getString("nome") ?: return@mapNotNull null
-                            val telemovel = document.getString("telemovel") ?: return@mapNotNull null
-                            val agregado_id = document.getString("agregado_id") ?: return@mapNotNull null
+                            val telemovel =
+                                document.getString("telemovel") ?: return@mapNotNull null
+                            val agregado_id =
+                                document.getString("agregado_id") ?: return@mapNotNull null
                             val limite = document.getBoolean("limite") ?: return@mapNotNull null
 
                             BeneficiarioData(
@@ -708,7 +824,9 @@ class FirestoreViewModel : ViewModel() {
             .addOnSuccessListener { anunciosSnapshot ->
                 val anuncios = mutableListOf<AllAnuncios>()
 
-                val lojaIds = anunciosSnapshot.documents.mapNotNull { it.getString("loja_social_id") }.distinct()
+                val lojaIds =
+                    anunciosSnapshot.documents.mapNotNull { it.getString("loja_social_id") }
+                        .distinct()
 
                 if (lojaIds.isEmpty()) {
                     _allAnuncios.value = emptyList()
@@ -721,7 +839,12 @@ class FirestoreViewModel : ViewModel() {
                     .addOnSuccessListener { lojasSnapshot ->
                         val lojasMap = lojasSnapshot.documents.associateBy(
                             { it.id },
-                            { Pair(it.getString("nome") ?: "Loja desconhecida", it.getString("imagemUrl")) }
+                            {
+                                Pair(
+                                    it.getString("nome") ?: "Loja desconhecida",
+                                    it.getString("imagemUrl")
+                                )
+                            }
                         )
 
                         for (anuncioDoc in anunciosSnapshot.documents) {
@@ -750,7 +873,10 @@ class FirestoreViewModel : ViewModel() {
                         _allAnuncios.value = anuncios
                     }
                     .addOnFailureListener { e ->
-                        Log.e("FirestoreViewModel", "Erro ao buscar detalhes das lojas: ${e.message}")
+                        Log.e(
+                            "FirestoreViewModel",
+                            "Erro ao buscar detalhes das lojas: ${e.message}"
+                        )
                         _allAnuncios.value = emptyList()
                     }
             }
@@ -773,7 +899,8 @@ class FirestoreViewModel : ViewModel() {
                 }
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao carregar dados da Loja Social: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao carregar dados da Loja Social: ${e.message}")
             }
     }
 
@@ -815,7 +942,8 @@ class FirestoreViewModel : ViewModel() {
                 }
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao carregar dados do anúncio: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao carregar dados do anúncio: ${e.message}")
             }
     }
 
@@ -859,10 +987,10 @@ class FirestoreViewModel : ViewModel() {
                 _ticketData.value = tickets
             }
             .addOnFailureListener { e ->
-                _firestoreState.value = FirestoreState.Error("Erro ao carregar dados dos tickets: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao carregar dados dos tickets: ${e.message}")
             }
     }
-
 
 
     fun deleteAnuncio(anuncioId: String) {
@@ -911,18 +1039,24 @@ class FirestoreViewModel : ViewModel() {
                                 getTicketDetails()
                             }
                             .addOnFailureListener { e ->
-                                Log.e("FirestoreViewModel", "Erro ao apagar Beneficiários: ${e.message}")
-                                _firestoreState.value = FirestoreState.Error("Erro ao apagar Beneficiários: ${e.message}")
+                                Log.e(
+                                    "FirestoreViewModel",
+                                    "Erro ao apagar Beneficiários: ${e.message}"
+                                )
+                                _firestoreState.value =
+                                    FirestoreState.Error("Erro ao apagar Beneficiários: ${e.message}")
                             }
                     }
                     .addOnFailureListener { e ->
                         Log.e("FirestoreViewModel", "Erro ao buscar Beneficiários: ${e.message}")
-                        _firestoreState.value = FirestoreState.Error("Erro ao buscar Beneficiários: ${e.message}")
+                        _firestoreState.value =
+                            FirestoreState.Error("Erro ao buscar Beneficiários: ${e.message}")
                     }
             }
             .addOnFailureListener { e ->
                 Log.e("FirestoreViewModel", "Erro ao apagar Agregado: ${e.message}")
-                _firestoreState.value = FirestoreState.Error("Erro ao apagar Agregado: ${e.message}")
+                _firestoreState.value =
+                    FirestoreState.Error("Erro ao apagar Agregado: ${e.message}")
             }
     }
 
@@ -936,6 +1070,33 @@ class FirestoreViewModel : ViewModel() {
                 Log.e("FirestoreViewModel", "Erro ao apagar anúncio: ${e.message}")
                 _firestoreState.value = FirestoreState.Error("Erro ao apagar anúncio: ${e.message}")
             }
+    }
+
+
+    suspend fun fetchBeneficiariosGroupedByNacionalidade(): List<PieEntry> {
+        val db = FirebaseFirestore.getInstance()
+        val entries = mutableListOf<PieEntry>()
+
+        try {
+            val querySnapshot = db.collection("beneficiarios").get().await()
+
+            // Group data by nationality and count the number of beneficiaries
+            val nationalityCount = mutableMapOf<String, Int>()
+
+            querySnapshot.documents.forEach { document ->
+                val nationality = document.getString("nacionalidade") ?: "Unknown"
+                nationalityCount[nationality] = nationalityCount.getOrDefault(nationality, 0) + 1
+            }
+
+            // Create PieEntry for each nationality and count
+            nationalityCount.forEach { (nationality, count) ->
+                entries.add(PieEntry(count.toFloat(), nationality))
+            }
+        } catch (e: Exception) {
+            // Handle error if data fetch fails
+        }
+
+        return entries
     }
 
     fun getBeneficiarioByTelemovel(telemovel: String) {
