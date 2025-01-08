@@ -28,6 +28,7 @@ import com.example.share2care.pages.RegisterPage
 import com.example.share2care.pages.EditLojaSocial
 import com.example.share2care.pages.HomePageAnonymous
 import com.example.share2care.pages.InitialBeneficiarioPage
+import com.example.share2care.pages.ReportsScreen
 import com.example.share2care.pages.TicketsPage
 import com.example.share2care.ui.components.EditAnuncioPage
 
@@ -151,6 +152,9 @@ fun AppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
         }
         composable("checkout") {
             CheckOutPage(navController,authViewModel)
+        }
+        composable("ReportsScreen") {
+            ReportsScreen(navController,authViewModel)
         }
     })
 }
